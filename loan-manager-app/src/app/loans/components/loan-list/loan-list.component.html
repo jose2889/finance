@@ -1,0 +1,21 @@
+<div class="container">
+  <h2>Loans</h2>
+  <button (click)="navigateToAddLoan()" class="button add-button">Add New Loan</button>
+  <ul *ngIf="loans.length > 0; else noLoans">
+    <li *ngFor="let loan of loans">
+      <div class="loan-details">
+        <span>Client: <strong>{{ loan.clientName }}</strong></span>
+        <span>Amount: <strong>{{ formatCurrency(loan.loanAmount) }}</strong></span>
+        <span>Rate: <strong>{{ loan.interestRate * 100 }}%</strong></span>
+        <span>Term: <strong>{{ loan.termMonths }} months</strong></span>
+        <span>Start Date: <strong>{{ formatDate(loan.startDate) }}</strong></span>
+      </div>
+      <div class="loan-actions">
+        <button (click)="viewInstallments(loan.id)" class="button button-secondary">View Installments</button>
+        <!-- <button (click)="editLoan(loan.id)" class="button button-secondary">Edit</button> NO EDIT FOR NOW -->
+        <button (click)="deleteLoan(loan.id)" class="button delete-button">Delete</button>
+      </div>
+    </li>
+  </ul>
+  <ng-template #noLoans><p class="no-items">No loans found. Add one!</p></ng-template>
+</div>

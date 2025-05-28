@@ -1,0 +1,44 @@
+<div class="container" *ngIf="loan">
+  <div class="page-header">
+    <h2>Installment Schedule for Loan #{{ loan.id }}</h2>
+    <div *ngIf="client">
+      <p><strong>Client:</strong> {{ client.firstName }} {{ client.lastName }}</p>
+    </div>
+    <p><strong>Amount:</strong> {{ formatCurrency(loan.loanAmount) }} | <strong>Rate:</strong> {{ loan.interestRate * 100 }}% | <strong>Term:</strong> {{ loan.termMonths }} months</p>
+    <button (click)="goBack()" class="button button-secondary mb-3">Back to Loans List</button>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Due Date</th>
+        <th>Payment Amount</th>
+        <th>Principal</th>
+        <th>Interest</th>
+        <th>Remaining Balance</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let inst of loan.installments">
+        <td>{{ inst.installmentNumber }}</td>
+        <td>{{ formatDate(inst.dueDate) }}</td>
+        <td>{{ formatCurrency(inst.amount) }}</td>
+        <td>{{ formatCurrency(inst.principal) }}</td>
+        <td>{{ formatCurrency(inst.interest) }}</td>
+        <td>{{ formatCurrency(inst.remainingBalance) }}</td>
+        <td>
+          <select [value]="inst.status" (change)="updateStatus(inst.installmentNumber, $event)">
+            <option [value]="InstallmentStatusEnum.Pending">Pending</option>
+            <option [value]="InstallmentStatusEnum.Paid">Paid</option>
+            <option [value]="InstallmentStatusEnum.Overdue">Overdue</option>
+          </select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div *ngIf="!loan">
+  <p class="no-items">Loan details not found.</p>
+  <button (click)="goBack()" class="button button-secondary">Back to Loans List</button>
+</div>

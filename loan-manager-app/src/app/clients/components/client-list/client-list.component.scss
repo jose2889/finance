@@ -1,0 +1,53 @@
+// SCSS for client-list.component.scss
+@import '../../../../styles.scss';
+
+:host {
+  display: block;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+
+  li {
+    background-color: #fff;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.07);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+
+    span {
+      font-size: 1.1em;
+      color: var(--dark-text);
+    }
+
+    div { // Button container within the list item
+      display: flex;
+      gap: 8px;
+    }
+
+    // Specific styling for buttons directly within list items
+    button {
+      padding: 6px 12px; // Smaller padding
+      font-size: 0.9em;   // Smaller font size
+      // These buttons should also have classes like 'button-secondary', 'button-danger'
+      // applied in their HTML to get base styling from global styles.scss
+    }
+  }
+}
+
+p { // For "No items found" message. Using a more specific class in HTML is better.
+  text-align: center;
+  font-size: 1.1em;
+  color: var(--secondary-color);
+  margin-top: 20px;
+}
+
+// .add-button is defined globally in styles.scss.
+// Ensure it's applied via class in the HTML template:
+// <button class="add-button" (click)="navigateToAddClient()">Add New Client</button>

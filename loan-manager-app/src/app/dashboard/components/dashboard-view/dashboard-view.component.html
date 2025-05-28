@@ -1,0 +1,40 @@
+<div class="container dashboard-container">
+  <h2>Dashboard</h2>
+
+  <div class="metrics-summary">
+    <div class="metric-card">
+      <h3>Total Clients</h3>
+      <p>{{ totalClients }}</p>
+    </div>
+    <div class="metric-card">
+      <h3>Total Loans</h3>
+      <p>{{ totalLoans }}</p>
+    </div>
+    <div class="metric-card">
+      <h3>Total Loaned Amount</h3>
+      <p>{{ formatCurrency(totalLoanedAmount) }}</p>
+    </div>
+  </div>
+
+  <div class="charts-container">
+    <div class="chart-card" *ngIf="barChartData.datasets[0].data.length > 0">
+      <h3>Loans Per Client</h3>
+      <canvas baseChart
+        [data]="barChartData"
+        [options]="barChartOptions"
+        [type]="barChartType">
+      </canvas>
+    </div>
+    <div class="chart-card" *ngIf="pieChartData.datasets[0].data.length > 0">
+      <h3>Loan Amount Distribution</h3>
+      <canvas baseChart
+        [data]="pieChartData"
+        [options]="pieChartOptions"
+        [type]="pieChartType">
+      </canvas>
+    </div>
+    <div *ngIf="barChartData.datasets[0].data.length === 0 && pieChartData.datasets[0].data.length === 0">
+       <p>No loan data available to display charts. Add some loans first!</p>
+    </div>
+  </div>
+</div>

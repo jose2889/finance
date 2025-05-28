@@ -1,0 +1,14 @@
+<div class="container">
+  <h2>Clients</h2>
+  <button (click)="navigateToAddClient()" class="button add-button">Add New Client</button>
+  <ul *ngIf="clients.length > 0; else noClients">
+    <li *ngFor="let client of clients">
+      <span>{{ client.firstName }} {{ client.lastName }}</span>
+      <div>
+        <button (click)="editClient(client.id)" class="button button-secondary">Edit</button>
+        <button (click)="deleteClient(client.id)" class="button delete-button">Delete</button>
+      </div>
+    </li>
+  </ul>
+  <ng-template #noClients><p class="no-items">No clients found. Add one!</p></ng-template>
+</div>
