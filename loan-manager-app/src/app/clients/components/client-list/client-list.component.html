@@ -1,14 +1,14 @@
 <div class="container">
-  <h2>Clients</h2>
-  <button (click)="navigateToAddClient()" class="button add-button">Add New Client</button>
+  <h2>Clientes</h2>
+  <button (click)="navigateToAddClient()" class="button add-button">Agregar Nuevo Cliente</button>
   <ul *ngIf="clients.length > 0; else noClients">
     <li *ngFor="let client of clients">
       <span>{{ client.firstName }} {{ client.lastName }}</span>
       <div>
-        <button (click)="editClient(client.id)" class="button button-secondary">Edit</button>
-        <button (click)="deleteClient(client.id)" class="button delete-button">Delete</button>
+        <button (click)="editClient(client.id)" class="button button-secondary">Editar</button>
+        <button (click)="deleteClient(client.id)" class="button delete-button">Eliminar</button>
       </div>
     </li>
   </ul>
-  <ng-template #noClients><p class="no-items">No clients found. Add one!</p></ng-template>
+  <ng-template #noClients><p class="no-items">No se encontraron clientes. ¡Agrega uno!</p></ng-template>
 </div>

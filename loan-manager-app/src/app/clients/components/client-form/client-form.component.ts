@@ -37,7 +37,7 @@ export class ClientFormComponent implements OnInit {
         this.clientForm.patchValue(client);
       } else {
         // Handle client not found, maybe navigate back or show error
-        console.error('Client not found for editing');
+        console.error('Cliente no encontrado para editar');
         this.router.navigate(['/clients']);
       }
     }

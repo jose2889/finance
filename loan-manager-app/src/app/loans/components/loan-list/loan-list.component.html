@@ -1,21 +1,21 @@
 <div class="container">
-  <h2>Loans</h2>
-  <button (click)="navigateToAddLoan()" class="button add-button">Add New Loan</button>
+  <h2>Préstamos</h2>
+  <button (click)="navigateToAddLoan()" class="button add-button">Agregar Nuevo Préstamo</button>
   <ul *ngIf="loans.length > 0; else noLoans">
     <li *ngFor="let loan of loans">
       <div class="loan-details">
-        <span>Client: <strong>{{ loan.clientName }}</strong></span>
-        <span>Amount: <strong>{{ formatCurrency(loan.loanAmount) }}</strong></span>
-        <span>Rate: <strong>{{ loan.interestRate * 100 }}%</strong></span>
-        <span>Term: <strong>{{ loan.termMonths }} months</strong></span>
-        <span>Start Date: <strong>{{ formatDate(loan.startDate) }}</strong></span>
+        <span>Cliente: <strong>{{ loan.clientName }}</strong></span>
+        <span>Monto: <strong>{{ formatCurrency(loan.loanAmount) }}</strong></span>
+        <span>Tasa: <strong>{{ loan.interestRate * 100 }}%</strong></span>
+        <span>Plazo: <strong>{{ loan.termMonths }} months</strong></span> <!-- "months" can be "meses" -->
+        <span>Fecha de Inicio: <strong>{{ formatDate(loan.startDate) }}</strong></span>
       </div>
       <div class="loan-actions">
-        <button (click)="viewInstallments(loan.id)" class="button button-secondary">View Installments</button>
+        <button (click)="viewInstallments(loan.id)" class="button button-secondary">Ver Cuotas</button>
         <!-- <button (click)="editLoan(loan.id)" class="button button-secondary">Edit</button> NO EDIT FOR NOW -->
-        <button (click)="deleteLoan(loan.id)" class="button delete-button">Delete</button>
+        <button (click)="deleteLoan(loan.id)" class="button delete-button">Eliminar</button>
       </div>
     </li>
   </ul>
-  <ng-template #noLoans><p class="no-items">No loans found. Add one!</p></ng-template>
+  <ng-template #noLoans><p class="no-items">No se encontraron préstamos. ¡Agrega uno!</p></ng-template>
 </div>

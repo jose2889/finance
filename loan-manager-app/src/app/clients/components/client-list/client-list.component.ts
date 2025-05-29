@@ -31,7 +31,7 @@ export class ClientListComponent implements OnInit {
   }
 
   deleteClient(id: string): void {
-    if (confirm('Are you sure you want to delete this client?')) {
+    if (confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
       this.clientService.deleteClient(id);
       this.loadClients(); // Refresh list
     }

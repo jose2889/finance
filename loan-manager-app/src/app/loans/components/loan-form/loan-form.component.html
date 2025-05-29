@@ -1,57 +1,57 @@
 <div class="container">
-  <h2>Add New Loan</h2>
+  <h2>Agregar Nuevo Préstamo</h2>
   <form [formGroup]="loanForm" (ngSubmit)="onSubmit()">
     <div>
-      <label for="clientId">Client:</label>
+      <label for="clientId">Cliente:</label>
       <select id="clientId" formControlName="clientId">
-        <option value="" disabled>Select a client</option>
+        <option value="" disabled>Seleccione un cliente</option>
         <option *ngFor="let client of clients" [value]="client.id">
           {{ client.firstName }} {{ client.lastName }}
         </option>
       </select>
       <div *ngIf="formControls['clientId'].touched && formControls['clientId'].errors?.['required']">
-        <small>Client is required.</small>
+        <small>El cliente es obligatorio.</small>
       </div>
     </div>
     <div>
-      <label for="loanAmount">Loan Amount:</label>
+      <label for="loanAmount">Monto del Préstamo:</label>
       <input id="loanAmount" type="number" formControlName="loanAmount">
       <div *ngIf="formControls['loanAmount'].touched && formControls['loanAmount'].invalid">
-        <small *ngIf="formControls['loanAmount'].errors?.['required']">Amount is required.</small>
-        <small *ngIf="formControls['loanAmount'].errors?.['min']">Amount must be positive.</small>
+        <small *ngIf="formControls['loanAmount'].errors?.['required']">El monto es obligatorio.</small>
+        <small *ngIf="formControls['loanAmount'].errors?.['min']">El monto debe ser positivo.</small>
       </div>
     </div>
     <div>
-      <label for="interestRate">Annual Interest Rate (e.g., 0.05 for 5%):</label>
+      <label for="interestRate">Tasa de Interés Anual (ej: 0.05 para 5%):</label>
       <input id="interestRate" type="number" step="0.001" formControlName="interestRate">
        <div *ngIf="formControls['interestRate'].touched && formControls['interestRate'].invalid">
-        <small *ngIf="formControls['interestRate'].errors?.['required']">Rate is required.</small>
-        <small *ngIf="formControls['interestRate'].errors?.['min']">Rate must be non-negative.</small>
-        <small *ngIf="formControls['interestRate'].errors?.['max']">Rate must be less than or equal to 1 (100%).</small>
+        <small *ngIf="formControls['interestRate'].errors?.['required']">La tasa es obligatoria.</small>
+        <small *ngIf="formControls['interestRate'].errors?.['min']">La tasa no puede ser negativa.</small>
+        <small *ngIf="formControls['interestRate'].errors?.['max']">La tasa debe ser menor o igual a 1 (100%).</small>
       </div>
     </div>
     <div>
-      <label for="termMonths">Term (Months):</label>
+      <label for="termMonths">Plazo (Meses):</label>
       <input id="termMonths" type="number" formControlName="termMonths">
        <div *ngIf="formControls['termMonths'].touched && formControls['termMonths'].invalid">
-        <small *ngIf="formControls['termMonths'].errors?.['required']">Term is required.</small>
-        <small *ngIf="formControls['termMonths'].errors?.['min']">Term must be at least 1 month.</small>
+        <small *ngIf="formControls['termMonths'].errors?.['required']">El plazo es obligatorio.</small>
+        <small *ngIf="formControls['termMonths'].errors?.['min']">El plazo debe ser de al menos 1 mes.</small>
       </div>
     </div>
     <div>
-      <label for="startDate">Start Date:</label>
+      <label for="startDate">Fecha de Inicio:</label>
       <input id="startDate" type="date" formControlName="startDate">
       <div *ngIf="formControls['startDate'].touched && formControls['startDate'].errors?.['required']">
-        <small>Start date is required.</small>
+        <small>La fecha de inicio es obligatoria.</small>
       </div>
     </div>
     <div>
-      <label for="purpose">Purpose (Optional):</label>
+      <label for="purpose">Propósito (Opcional):</label>
       <input id="purpose" formControlName="purpose">
     </div>
     <div class="form-actions">
-      <button type="submit" class="button button-primary" [disabled]="loanForm.invalid">Save Loan</button>
-      <button type="button" class="button button-secondary" (click)="cancel()">Cancel</button>
+      <button type="submit" class="button button-primary" [disabled]="loanForm.invalid">Guardar Préstamo</button>
+      <button type="button" class="button button-secondary" (click)="cancel()">Cancelar</button>
     </div>
   </form>
 </div>

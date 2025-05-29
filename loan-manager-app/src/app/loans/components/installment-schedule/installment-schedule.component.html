@@ -1,22 +1,22 @@
 <div class="container" *ngIf="loan">
   <div class="page-header">
-    <h2>Installment Schedule for Loan #{{ loan.id }}</h2>
+    <h2>Plan de Pagos para Préstamo #{{ loan.id }}</h2>
     <div *ngIf="client">
-      <p><strong>Client:</strong> {{ client.firstName }} {{ client.lastName }}</p>
+      <p><strong>Cliente:</strong> {{ client.firstName }} {{ client.lastName }}</p>
     </div>
-    <p><strong>Amount:</strong> {{ formatCurrency(loan.loanAmount) }} | <strong>Rate:</strong> {{ loan.interestRate * 100 }}% | <strong>Term:</strong> {{ loan.termMonths }} months</p>
-    <button (click)="goBack()" class="button button-secondary mb-3">Back to Loans List</button>
+    <p><strong>Monto:</strong> {{ formatCurrency(loan.loanAmount) }} | <strong>Tasa:</strong> {{ loan.interestRate * 100 }}% | <strong>Plazo:</strong> {{ loan.termMonths }} meses</p>
+    <button (click)="goBack()" class="button button-secondary mb-3">Volver a la Lista de Préstamos</button>
   </div>
   <table>
     <thead>
       <tr>
-        <th>#</th>
-        <th>Due Date</th>
-        <th>Payment Amount</th>
-        <th>Principal</th>
-        <th>Interest</th>
-        <th>Remaining Balance</th>
-        <th>Status</th>
+        <th>Nro.</th>
+        <th>Fecha de Vencimiento</th>
+        <th>Monto de Pago</th>
+        <th>Capital</th>
+        <th>Interés</th>
+        <th>Saldo Restante</th>
+        <th>Estado</th>
       </tr>
     </thead>
     <tbody>
@@ -29,9 +29,9 @@
         <td>{{ formatCurrency(inst.remainingBalance) }}</td>
         <td>
           <select [value]="inst.status" (change)="updateStatus(inst.installmentNumber, $event)">
-            <option [value]="InstallmentStatusEnum.Pending">Pending</option>
-            <option [value]="InstallmentStatusEnum.Paid">Paid</option>
-            <option [value]="InstallmentStatusEnum.Overdue">Overdue</option>
+            <option [value]="InstallmentStatusEnum.Pending">Pendiente</option>
+            <option [value]="InstallmentStatusEnum.Paid">Pagado</option>
+            <option [value]="InstallmentStatusEnum.Overdue">Vencido</option>
           </select>
         </td>
       </tr>
@@ -39,6 +39,6 @@
   </table>
 </div>
 <div *ngIf="!loan">
-  <p class="no-items">Loan details not found.</p>
-  <button (click)="goBack()" class="button button-secondary">Back to Loans List</button>
+  <p class="no-items">Detalles del préstamo no encontrados.</p>
+  <button (click)="goBack()" class="button button-secondary">Volver a la Lista de Préstamos</button>
 </div>

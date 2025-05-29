@@ -1,38 +1,38 @@
 <div class="container">
-  <h2>{{ isEditMode ? 'Edit Client' : 'Add New Client' }}</h2>
+  <h2>{{ isEditMode ? 'Editar Cliente' : 'Agregar Nuevo Cliente' }}</h2>
   <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
     <div>
-      <label for="firstName">First Name:</label>
+      <label for="firstName">Nombres:</label>
       <input id="firstName" formControlName="firstName">
       <div *ngIf="formControls['firstName'].touched && formControls['firstName'].invalid">
-        <small *ngIf="formControls['firstName'].errors?.['required']">First name is required.</small>
+        <small *ngIf="formControls['firstName'].errors?.['required']">El nombre es obligatorio.</small>
       </div>
     </div>
     <div>
-      <label for="lastName">Last Name:</label>
+      <label for="lastName">Apellidos:</label>
       <input id="lastName" formControlName="lastName">
       <div *ngIf="formControls['lastName'].touched && formControls['lastName'].invalid">
-        <small *ngIf="formControls['lastName'].errors?.['required']">Last name is required.</small>
+        <small *ngIf="formControls['lastName'].errors?.['required']">El apellido es obligatorio.</small>
       </div>
     </div>
     <div>
-      <label for="email">Email:</label>
+      <label for="email">Correo Electrónico:</label>
       <input id="email" type="email" formControlName="email">
        <div *ngIf="formControls['email'].touched && formControls['email'].errors?.['email']">
-        <small>Invalid email format.</small>
+        <small>Formato de correo inválido.</small>
       </div>
     </div>
     <div>
-      <label for="phone">Phone:</label>
+      <label for="phone">Teléfono:</label>
       <input id="phone" formControlName="phone">
     </div>
     <div>
-      <label for="address">Address:</label>
+      <label for="address">Dirección:</label>
       <textarea id="address" formControlName="address"></textarea>
     </div>
     <div class="form-actions">
-      <button type="submit" class="button button-primary" [disabled]="clientForm.invalid">{{ isEditMode ? 'Update' : 'Save' }} Client</button>
-      <button type="button" class="button button-secondary" (click)="cancel()">Cancel</button>
+      <button type="submit" class="button button-primary" [disabled]="clientForm.invalid">{{ isEditMode ? 'Actualizar' : 'Guardar' }} Cliente</button>
+      <button type="button" class="button button-secondary" (click)="cancel()">Cancelar</button>
     </div>
   </form>
 </div>

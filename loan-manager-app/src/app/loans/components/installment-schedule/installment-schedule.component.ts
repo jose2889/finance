@@ -33,11 +33,11 @@ export class InstallmentScheduleComponent implements OnInit {
       if (this.loan) {
         this.client = this.clientService.getClientById(this.loan.clientId);
       } else {
-        console.error('Loan not found');
+        console.error('Préstamo no encontrado');
         this.router.navigate(['/loans']);
       }
     } else {
-       console.error('Loan ID not provided');
+       console.error('ID de préstamo no proporcionado');
        this.router.navigate(['/loans']);
     }
   }

@@ -34,7 +34,7 @@ export class DashboardViewComponent implements OnInit {
   public barChartData: ChartData<'bar'> = {
     labels: [],
     datasets: [
-      { data: [], label: 'Number of Loans', backgroundColor: 'rgba(54, 162, 235, 0.5)', borderColor: 'rgb(54, 162, 235)', borderWidth: 1 }
+      { data: [], label: 'Número de Préstamos', backgroundColor: 'rgba(54, 162, 235, 0.5)', borderColor: 'rgb(54, 162, 235)', borderWidth: 1 }
     ]
   };
 
@@ -113,8 +113,8 @@ export class DashboardViewComponent implements OnInit {
 
     loans.forEach((loan, index) => {
       const client = clients.find(c => c.id === loan.clientId);
-      const clientName = client ? `${client.firstName} ${client.lastName}` : 'Unknown Client';
-      pieLabels.push(`Loan #${index + 1} (${clientName}) - ${this.formatCurrency(loan.loanAmount)}`);
+      const clientName = client ? `${client.firstName} ${client.lastName}` : 'Cliente Desconocido'; // Also translate fallback
+      pieLabels.push(`Préstamo #${index + 1} (${clientName}) - ${this.formatCurrency(loan.loanAmount)}`);
       pieData.push(loan.loanAmount);
     });
 

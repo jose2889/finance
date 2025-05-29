@@ -35,12 +35,12 @@ export class LoanListComponent implements OnInit {
   loadLoans(): void {
     this.loans = this.loanService.getLoans().map(loan => {
       const client = this.clients.find(c => c.id === loan.clientId);
-      return { ...loan, clientName: client ? `${client.firstName} ${client.lastName}` : 'Unknown Client' };
+      return { ...loan, clientName: client ? `${client.firstName} ${client.lastName}` : 'Cliente Desconocido' };
     });
   }
 
   deleteLoan(id: string): void {
-    if (confirm('Are you sure you want to delete this loan?')) {
+    if (confirm('¿Estás seguro de que quieres eliminar este préstamo?')) {
       this.loanService.deleteLoan(id);
       this.loadLoans(); // Refresh list
     }
