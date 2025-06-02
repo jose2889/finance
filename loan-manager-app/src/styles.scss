@@ -151,6 +151,16 @@ select {
   box-sizing: border-box;
   font-family: 'Roboto', sans-serif;
   font-size: 1em;
+
+  // ===== ADDED/MODIFIED PROPERTIES =====
+  line-height: 1.4;
+  color: var(--dark-text);
+  background-color: #fff; 
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  // =====================================
+
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
   &:focus {
     outline: none;
