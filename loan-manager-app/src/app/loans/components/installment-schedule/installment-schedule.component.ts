@@ -45,13 +45,27 @@ export class InstallmentScheduleComponent implements OnInit {
   updateStatus(installmentNumber: number, event: Event): void {
     const selectElement = event.target as HTMLSelectElement;
     const newStatus = selectElement.value as InstallmentStatus;
-    if (this.loanId && this.loan) {
-      this.loanService.updateInstallmentStatus(this.loanId, installmentNumber, newStatus);
-      // Optionally, refresh loan data to reflect changes if not automatically updated
-      const updatedLoan = this.loanService.getLoanById(this.loanId);
-      if (updatedLoan) {
-          this.loan = updatedLoan;
+
+    console.log('[InstallmentSchedule] updateStatus called.');
+    console.log('[InstallmentSchedule] loanId:', this.loanId);
+    console.log('[InstallmentSchedule] installmentNumber:', installmentNumber);
+    console.log('[InstallmentSchedule] newStatus:', newStatus);
+
+    if (this.loanId && this.loan) { // Ensure loanId is not null/undefined
+      const success = this.loanService.updateInstallmentStatus(this.loanId, installmentNumber, newStatus);
+      console.log('[InstallmentSchedule] Service call returned:', success);
+      if (success) {
+        // Optionally, refresh loan data to reflect changes if not automatically updated by service's internal state management
+        const updatedLoan = this.loanService.getLoanById(this.loanId);
+        if (updatedLoan) {
+            this.loan = updatedLoan; // This ensures the template updates if the service returns a new object or mutates
+            console.log('[InstallmentSchedule] Loan data refreshed in component.');
+        }
+      } else {
+        console.error('[InstallmentSchedule] Failed to update status via service.');
       }
+    } else {
+      console.error('[InstallmentSchedule] loanId is missing. Cannot update status.');
     }
   }
   

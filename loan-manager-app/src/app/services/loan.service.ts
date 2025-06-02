@@ -11,20 +11,45 @@ export class LoanService {
   constructor(private localStorageService: LocalStorageService) { }
 
   private getLoansFromStorage(): Loan[] {
-    // Dates are stored as strings in JSON, so we need to parse them back to Date objects
-    const loans = this.localStorageService.getItem<Loan[]>(this.storageKey) || [];
-    return loans.map(loan => ({
-      ...loan,
-      startDate: new Date(loan.startDate),
-      installments: loan.installments.map(inst => ({
-        ...inst,
-        dueDate: new Date(inst.dueDate)
-      }))
-    }));
+    console.log('[LoanService] getLoansFromStorage called.');
+    // Attempt to get the raw string to see what's actually in localStorage before LocalStorageService parses it.
+    // Note: LocalStorageService.getItem<T> already does JSON.parse.
+    // To get the raw string, we might need a different method in LocalStorageService or use localStorage directly here for logging.
+    // For now, let's assume LocalStorageService.getItem returns the parsed object or null.
+    const loansFromStorage = this.localStorageService.getItem<Loan[]>(this.storageKey) || [];
+    
+    // Log what LocalStorageService returned (which should be an array of objects, possibly with string dates)
+    console.log('[LoanService] Data from LocalStorageService (before date parsing):', JSON.parse(JSON.stringify(loansFromStorage)));
+
+    if (!loansFromStorage || loansFromStorage.length === 0) {
+      console.log('[LoanService] No loans found in storage or empty array after initial retrieval.');
+      return [];
+    }
+    
+    console.log('[LoanService] Mapping over loans to parse dates...');
+    const parsedLoans = loansFromStorage.map((loan, index) => {
+      console.log(`[LoanService] Processing loan index ${index} for date parsing (original from storage):`, JSON.parse(JSON.stringify(loan)));
+      const parsedLoan = {
+        ...loan,
+        startDate: new Date(loan.startDate),
+        installments: loan.installments.map(inst => ({
+          ...inst,
+          dueDate: new Date(inst.dueDate)
+        }))
+      };
+      console.log(`[LoanService] Loan index ${index} after date parsing:`, JSON.parse(JSON.stringify(parsedLoan)));
+      return parsedLoan;
+    });
+    console.log('[LoanService] Fully parsed loans:', JSON.parse(JSON.stringify(parsedLoans)));
+    return parsedLoans;
   }
 
   private saveLoansToStorage(loans: Loan[]): void {
+    console.log('[LoanService] saveLoansToStorage called.');
+    console.log('[LoanService] Saving loans (structure of first loan if exists):', loans.length > 0 ? JSON.parse(JSON.stringify(loans[0])) : 'empty array');
+    console.log('[LoanService] Total loans to save:', loans.length);
     this.localStorageService.setItem(this.storageKey, loans);
+    console.log('[LoanService] Data supposedly saved by LocalStorageService.');
   }
 
   getLoans(): Loan[] {
@@ -153,16 +178,28 @@ export class LoanService {
   }
 
    updateInstallmentStatus(loanId: string, installmentNumber: number, status: InstallmentStatus): boolean {
-       const loans = this.getLoansFromStorage();
-       const loan = loans.find(l => l.id === loanId);
-       if (loan) {
-           const installment = loan.installments.find(i => i.installmentNumber === installmentNumber);
-           if (installment) {
-               installment.status = status;
-               this.saveLoansToStorage(loans);
-               return true;
-           }
-       }
-       return false;
-   }
+    console.log('[LoanService] updateInstallmentStatus called.');
+    console.log('[LoanService] loanId:', loanId, 'installmentNumber:', installmentNumber, 'newStatus:', status);
+
+    const loans = this.getLoansFromStorage();
+    const loan = loans.find(l => l.id === loanId);
+
+    if (loan) {
+      console.log('[LoanService] Loan found:', loan);
+      const installment = loan.installments.find(i => i.installmentNumber === installmentNumber);
+      if (installment) {
+        console.log('[LoanService] Installment found:', installment);
+        installment.status = status;
+        console.log('[LoanService] Installment status updated. Saving loans...');
+        this.saveLoansToStorage(loans);
+        console.log('[LoanService] Loans saved.');
+        return true;
+      } else {
+        console.error('[LoanService] Installment not found for number:', installmentNumber);
+      }
+    } else {
+      console.error('[LoanService] Loan not found for id:', loanId);
+    }
+    return false;
+  }
 }
