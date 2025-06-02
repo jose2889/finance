@@ -28,16 +28,32 @@ export class LoanService {
     
     console.log('[LoanService] Mapping over loans to parse dates...');
     const parsedLoans = loansFromStorage.map((loan, index) => {
-      console.log(`[LoanService] Processing loan index ${index} for date parsing (original from storage):`, JSON.parse(JSON.stringify(loan)));
+      console.log(`[LoanService] Processing loan index ${index} (ID: ${loan.id}) for date parsing (original from storage):`, JSON.parse(JSON.stringify(loan)));
+      
+      let parsedStartDate = new Date(loan.startDate);
+      if (isNaN(parsedStartDate.getTime())) {
+        console.error(`[LoanService] Loan index ${index} (ID: ${loan.id}) has an invalid startDate string: ${loan.startDate}. Resulted in Invalid Date.`);
+        // parsedStartDate will remain an Invalid Date object
+      }
+
+      const parsedInstallments = loan.installments.map((inst, instIndex) => {
+        let parsedDueDate = new Date(inst.dueDate);
+        if (isNaN(parsedDueDate.getTime())) {
+          console.error(`[LoanService] Loan index ${index} (ID: ${loan.id}), Installment index ${instIndex} (Number: ${inst.installmentNumber}) has an invalid dueDate string: ${inst.dueDate}. Resulted in Invalid Date.`);
+          // parsedDueDate will remain an Invalid Date object
+        }
+        return {
+          ...inst,
+          dueDate: parsedDueDate
+        };
+      });
+
       const parsedLoan = {
         ...loan,
-        startDate: new Date(loan.startDate),
-        installments: loan.installments.map(inst => ({
-          ...inst,
-          dueDate: new Date(inst.dueDate)
-        }))
+        startDate: parsedStartDate,
+        installments: parsedInstallments
       };
-      console.log(`[LoanService] Loan index ${index} after date parsing:`, JSON.parse(JSON.stringify(parsedLoan)));
+      console.log(`[LoanService] Loan index ${index} (ID: ${loan.id}) after date parsing:`, JSON.parse(JSON.stringify(parsedLoan)));
       return parsedLoan;
     });
     console.log('[LoanService] Fully parsed loans:', JSON.parse(JSON.stringify(parsedLoans)));
@@ -179,7 +195,21 @@ export class LoanService {
 
    updateInstallmentStatus(loanId: string, installmentNumber: number, status: InstallmentStatus): boolean {
     console.log('[LoanService] updateInstallmentStatus called.');
-    console.log('[LoanService] loanId:', loanId, 'installmentNumber:', installmentNumber, 'newStatus:', status);
+    console.log('[LoanService] Initial params - loanId:', loanId, 'installmentNumber:', installmentNumber, 'newStatus:', status);
+
+    // Input Validation
+    if (!loanId || typeof loanId !== 'string' || loanId.trim() === '') {
+      console.error('[LoanService] Invalid loanId provided:', loanId);
+      return false;
+    }
+    if (installmentNumber == null || typeof installmentNumber !== 'number' || installmentNumber <= 0) { // Using == null to catch undefined too
+      console.error('[LoanService] Invalid installmentNumber provided:', installmentNumber);
+      return false;
+    }
+    if (!status || !Object.values(InstallmentStatus).includes(status)) {
+      console.error('[LoanService] Invalid status provided:', status);
+      return false;
+    }
 
     const loans = this.getLoansFromStorage();
     const loan = loans.find(l => l.id === loanId);
