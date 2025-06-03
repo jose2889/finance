@@ -53,6 +53,10 @@ export class LoanListComponent implements OnInit {
   viewInstallments(loanId: string): void {
     this.router.navigate(['/loans', loanId, 'installments']);
   }
+
+  navigateToAddPayment(loanId: string): void {
+    this.router.navigate(['/loans', loanId, 'add-payment']);
+  }
   
   formatCurrency(amount: number): string {
     return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });

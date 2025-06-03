@@ -187,49 +187,12 @@ export class LoanService {
         principal: parseFloat(principalPayment.toFixed(2)),
         interest: parseFloat(interestPayment.toFixed(2)),
         remainingBalance: parseFloat(remainingBalance.toFixed(2)),
-        status: InstallmentStatus.Pending
+        status: InstallmentStatus.Pending,
+        paidAmount: 0 // Initialize paidAmount
       });
     }
     return installments;
   }
 
-   updateInstallmentStatus(loanId: string, installmentNumber: number, status: InstallmentStatus): boolean {
-    console.log('[LoanService] updateInstallmentStatus called.');
-    console.log('[LoanService] Initial params - loanId:', loanId, 'installmentNumber:', installmentNumber, 'newStatus:', status);
-
-    // Input Validation
-    if (!loanId || typeof loanId !== 'string' || loanId.trim() === '') {
-      console.error('[LoanService] Invalid loanId provided:', loanId);
-      return false;
-    }
-    if (installmentNumber == null || typeof installmentNumber !== 'number' || installmentNumber <= 0) { // Using == null to catch undefined too
-      console.error('[LoanService] Invalid installmentNumber provided:', installmentNumber);
-      return false;
-    }
-    if (!status || !Object.values(InstallmentStatus).includes(status)) {
-      console.error('[LoanService] Invalid status provided:', status);
-      return false;
-    }
-
-    const loans = this.getLoansFromStorage();
-    const loan = loans.find(l => l.id === loanId);
-
-    if (loan) {
-      console.log('[LoanService] Loan found:', loan);
-      const installment = loan.installments.find(i => i.installmentNumber === installmentNumber);
-      if (installment) {
-        console.log('[LoanService] Installment found:', installment);
-        installment.status = status;
-        console.log('[LoanService] Installment status updated. Saving loans...');
-        this.saveLoansToStorage(loans);
-        console.log('[LoanService] Loans saved.');
-        return true;
-      } else {
-        console.error('[LoanService] Installment not found for number:', installmentNumber);
-      }
-    } else {
-      console.error('[LoanService] Loan not found for id:', loanId);
-    }
-    return false;
-  }
+// Removed updateInstallmentStatus method as per instructions
 }

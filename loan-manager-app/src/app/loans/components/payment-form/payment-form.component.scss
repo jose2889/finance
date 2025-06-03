@@ -1,0 +1,31 @@
+// Inherits global form styling from styles.scss
+// Add specific styles if needed, for example:
+.loan-summary {
+  background-color: #f0f0f0; // var(--light-bg-alt) or similar if defined in :root
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0; // var(--border-color-alt) or similar if defined
+
+  p {
+    margin: 5px 0;
+    font-size: 0.95em;
+  }
+}
+
+.alert { // Basic alert styling
+     padding: 10px 15px;
+     border-radius: 4px;
+     text-align: center;
+ }
+ .alert-success {
+     background-color: var(--success-color); // Assuming --success-color is defined in :root
+     color: var(--light-text); // Assuming --light-text for contrast
+ }
+ .alert-danger {
+     background-color: var(--danger-color); // Assuming --danger-color is defined in :root
+     color: var(--light-text); // Assuming --light-text for contrast
+ }
+
+// Ensure global form styles for .form-actions, buttons, inputs, etc., are applied.
+// No need to duplicate them here if they are correctly handled globally.

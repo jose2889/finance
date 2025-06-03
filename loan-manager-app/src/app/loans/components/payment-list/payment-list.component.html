@@ -1,0 +1,37 @@
+<div class="payment-list-container">
+  <h4>Historial de Pagos</h4>
+  <div *ngIf="isLoading" class="text-center">Cargando pagos...</div>
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+
+  <div *ngIf="!isLoading && payments.length === 0 && !errorMessage">
+    <p>No se han registrado pagos para este préstamo aún.</p>
+  </div>
+
+  <table *ngIf="!isLoading && payments.length > 0" class="table table-sm table-striped">
+    <thead>
+      <tr>
+        <th>Fecha de Pago</th>
+        <th>Monto Pagado</th>
+        <th>Método</th>
+        <th>Notas</th>
+        <th>Aplicado a Cuotas</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let payment of payments">
+        <td>{{ formatDate(payment.paymentDate) }}</td>
+        <td>{{ formatCurrency(payment.amountPaid) }}</td>
+        <td>{{ payment.paymentMethod || '-' }}</td>
+        <td>{{ payment.notes || '-' }}</td>
+        <td>
+          <ul *ngIf="payment.appliedToInstallments && payment.appliedToInstallments.length > 0" class="list-unstyled mb-0">
+            <li *ngFor="let applied of payment.appliedToInstallments">
+              Cuota #{{ applied.installmentNumber }}: {{ formatCurrency(applied.amountApplied) }}
+            </li>
+          </ul>
+          <span *ngIf="!payment.appliedToInstallments || payment.appliedToInstallments.length === 0">-</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

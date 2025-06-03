@@ -10,6 +10,7 @@ export interface Installment {
   amount: number;
   principal: number;
   interest: number;
-  remainingBalance: number;
+  remainingBalance: number; // Scheduled remaining loan balance after this installment
   status: InstallmentStatus;
+  paidAmount?: number; // Amount actually paid towards this specific installment
 }

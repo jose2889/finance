@@ -13,6 +13,7 @@
         <th>Nro.</th>
         <th>Fecha de Vencimiento</th>
         <th>Monto de Pago</th>
+        <th>Monto Pagado</th> <!-- New Column -->
         <th>Capital</th>
         <th>Interés</th>
         <th>Saldo Restante</th>
@@ -24,19 +25,15 @@
         <td>{{ inst.installmentNumber }}</td>
         <td>{{ formatDate(inst.dueDate) }}</td>
         <td>{{ formatCurrency(inst.amount) }}</td>
+        <td>{{ formatCurrency(inst.paidAmount || 0) }}</td> <!-- New Cell -->
         <td>{{ formatCurrency(inst.principal) }}</td>
         <td>{{ formatCurrency(inst.interest) }}</td>
         <td>{{ formatCurrency(inst.remainingBalance) }}</td>
-        <td>
-          <select [value]="inst.status" (change)="updateStatus(inst.installmentNumber, $event)">
-            <option [value]="InstallmentStatusEnum.Pending">Pendiente</option>
-            <option [value]="InstallmentStatusEnum.Paid">Pagado</option>
-            <option [value]="InstallmentStatusEnum.Overdue">Vencido</option>
-          </select>
-        </td>
+        <td>{{ inst.status }}</td> <!-- Status as text -->
       </tr>
     </tbody>
   </table>
+  <app-payment-list [loanId]="loanId" *ngIf="loanId"></app-payment-list> <!-- Added Payment List Component -->
 </div>
 <div *ngIf="!loan">
   <p class="no-items">Detalles del préstamo no encontrados.</p>

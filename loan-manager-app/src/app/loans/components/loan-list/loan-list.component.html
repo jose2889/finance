@@ -11,9 +11,10 @@
         <span>Fecha de Inicio: <strong>{{ formatDate(loan.startDate) }}</strong></span>
       </div>
       <div class="loan-actions">
-        <button (click)="viewInstallments(loan.id)" class="button button-secondary">Ver Cuotas</button>
-        <!-- <button (click)="editLoan(loan.id)" class="button button-secondary">Edit</button> NO EDIT FOR NOW -->
-        <button (click)="deleteLoan(loan.id)" class="button delete-button">Eliminar</button>
+        <button (click)="viewInstallments(loan.id)" class="button button-secondary button-small">Ver Cuotas</button>
+        <button (click)="navigateToAddPayment(loan.id)" class="button button-success button-small">Registrar Pago</button>
+        <!-- <button (click)="editLoan(loan.id)" class="button button-secondary button-small">Edit</button> NO EDIT FOR NOW -->
+        <button (click)="deleteLoan(loan.id)" class="button delete-button button-small">Eliminar</button>
       </div>
     </li>
   </ul>

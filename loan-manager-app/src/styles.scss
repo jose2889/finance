@@ -93,6 +93,17 @@ button, .button {
   &:hover { background-color: var(--danger-color-dark); }
 }
 
+.button-success { // Generic success button
+  background-color: var(--success-color);
+  color: var(--light-text);
+  &:hover { background-color: var(--success-color-dark); }
+}
+
+.button-small { // For smaller buttons in lists/actions
+  padding: 5px 10px;
+  font-size: 0.8em;
+}
+
 // Specific button styles that can be applied via class
 .add-button {
    @extend .button; // Inherit base button styles
