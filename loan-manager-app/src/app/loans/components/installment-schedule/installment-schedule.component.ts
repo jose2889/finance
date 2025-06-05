@@ -5,7 +5,7 @@ import { LoanService } from '../../../services/loan.service'; // Adjusted path
 import { ClientService } from '../../../services/client.service'; // Adjusted path
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { PaymentListComponent } from './payment-list/payment-list.component'; // Import PaymentListComponent
+import { PaymentListComponent } from '../payment-list/payment-list.component'; // Import PaymentListComponent
 
 @Component({
   selector: 'app-installment-schedule',

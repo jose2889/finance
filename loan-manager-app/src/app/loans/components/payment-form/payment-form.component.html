@@ -1,7 +1,7 @@
 <div class="container">
   <h2>Registrar Pago {{ loan ? 'para Préstamo #' + loan.id.substring(0,8) : '' }}</h2>
   <div *ngIf="loan" class="loan-summary">
-     <p><strong>Cliente:</strong> {{ loan.clientName || 'Desconocido' }}</p> <!-- Assuming clientName is populated on Loan model by LoanService -->
+     <p><strong>Cliente ID:</strong> {{ loan.clientId || 'Desconocido' }}</p> <!-- Display client's ID -->
      <p><strong>Monto Original del Préstamo:</strong> {{ formatCurrency(loan.loanAmount) }}</p>
   </div>
 
