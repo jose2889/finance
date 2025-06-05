@@ -62,41 +62,59 @@ export class PaymentService {
     const appliedToInstallments: Payment['appliedToInstallments'] = [];
     let loanUpdated = false;
 
-    // Sort installments by due date, prioritizing Overdue then Pending
-    const installmentsToPay = loan.installments
-      .filter(inst => inst.status === InstallmentStatus.Overdue || inst.status === InstallmentStatus.Pending)
-      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+    // Get all installments sorted by their number (or due date)
+    const allInstallmentsSorted = [...loan.installments].sort((a, b) => a.installmentNumber - b.installmentNumber);
 
-    for (const inst of installmentsToPay) {
-      if (remainingPaymentAmount <= 0) break;
+    for (const inst of allInstallmentsSorted) {
+      if (remainingPaymentAmount <= 0) {
+        break; // No more payment amount to apply
+      }
 
-      const installmentDue = inst.amount; // Assuming inst.amount is the full amount due for that installment
-                                        // More complex: inst.amount - (amountAlreadyPaidOnThisInstallment || 0)
-      
-      if (inst.status === InstallmentStatus.Paid) continue; // Should be filtered but double check
+      if (inst.status === InstallmentStatus.Paid) {
+        // Typically skip fully paid installments.
+        // Business rule: Can we overpay a paid installment to create surplus from it? Not for now.
+        continue;
+      }
 
-      const amountToApplyToThisInstallment = Math.min(remainingPaymentAmount, installmentDue);
+      const amountAlreadyPaid = inst.paidAmount || 0;
+      const amountActuallyDueForInstallment = inst.amount - amountAlreadyPaid;
+
+      if (amountActuallyDueForInstallment <= 0) {
+        // This installment is already covered (possibly by a previous portion of this same payment if logic was different)
+        // or was fully paid before but status not updated (data integrity issue).
+        // For safety, if it's fully covered, ensure status is Paid.
+        if (inst.status !== InstallmentStatus.Paid && amountAlreadyPaid >= inst.amount) {
+            inst.status = InstallmentStatus.Paid;
+            loanUpdated = true;
+        }
+        continue;
+      }
+
+      const amountToApplyToThisInstallment = Math.min(remainingPaymentAmount, amountActuallyDueForInstallment);
 
       if (amountToApplyToThisInstallment > 0) {
+        inst.paidAmount = amountAlreadyPaid + amountToApplyToThisInstallment;
+        loanUpdated = true;
+
         appliedToInstallments.push({
           installmentNumber: inst.installmentNumber,
           amountApplied: amountToApplyToThisInstallment
         });
 
-        // For now, assume full payment of an installment changes status.
-        // Partial payment logic on installment itself is not yet implemented.
-        if (amountToApplyToThisInstallment >= installmentDue) { // Or very close, to handle floating point
-          inst.status = InstallmentStatus.Paid;
-          console.log(`[PaymentService] Installment ${inst.installmentNumber} for loan ${loanId} marked as Paid.`);
-          loanUpdated = true;
-        } else {
-          // Installment partially paid. Current model doesn't track inst.amountPaid.
-          // For now, it remains Pending/Overdue. The payment record shows what was applied.
-          console.log(`[PaymentService] Installment ${inst.installmentNumber} for loan ${loanId} partially paid with ${amountToApplyToThisInstallment}. It remains ${inst.status}.`);
-          // If we were to track partial payment on installment:
-          // inst.amountPaid = (inst.amountPaid || 0) + amountToApplyToThisInstallment;
-          // loanUpdated = true;
+        console.log(`[PaymentService] Applied ${amountToApplyToThisInstallment} to inst #${inst.installmentNumber}. New paidAmount: ${inst.paidAmount}`);
+
+        if (inst.paidAmount >= inst.amount) { // Check if it's fully paid (or overpaid)
+          if (inst.status !== InstallmentStatus.Paid) {
+            inst.status = InstallmentStatus.Paid;
+            console.log(`[PaymentService] Installment ${inst.installmentNumber} for loan ${loanId} marked as Paid.`);
+            // loanUpdated is already true
+          }
         }
+        // Note: Overdue status would need to be checked/updated based on paymentDate vs dueDate
+        // if an overdue installment becomes partially or fully paid.
+        // For now, only Paid status is set. If it was Overdue and now partially paid, it remains Overdue.
+        // A separate process or rule might be needed to change Overdue to Pending if partially paid on time.
+
         remainingPaymentAmount -= amountToApplyToThisInstallment;
       }
     }
