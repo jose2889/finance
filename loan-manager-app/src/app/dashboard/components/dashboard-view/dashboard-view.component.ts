@@ -4,17 +4,19 @@ import { BaseChartDirective } from 'ng2-charts'; // if needed for direct manipul
 
 import { ClientService } from '../../../services/client.service'; // Adjusted path
 import { LoanService } from '../../../services/loan.service';   // Adjusted path
+import { PaymentService } from '../../../services/payment.service'; // Import PaymentService
 import { Client, Loan } from '../../../models';         // Adjusted path
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms'; // Import FormsModule for ngModel (or event binding)
 import { RouterModule } from '@angular/router';
 // BaseChartDirective is already imported earlier in the file, ensure it's used in imports array
-// import { BaseChartDirective } from 'ng2-charts'; 
+// import { BaseChartDirective } from 'ng2-charts';
 
 
 @Component({
   selector: 'app-dashboard-view',
   standalone: true,
-  imports: [CommonModule, RouterModule, BaseChartDirective], // Added BaseChartDirective from existing import
+  imports: [CommonModule, RouterModule, BaseChartDirective, FormsModule], // Add FormsModule
   templateUrl: './dashboard-view.component.html',
   styleUrls: ['./dashboard-view.component.scss']
 })
@@ -23,6 +25,11 @@ export class DashboardViewComponent implements OnInit {
   totalClients: number = 0;
   totalLoans: number = 0;
   totalLoanedAmount: number = 0;
+  totalPaymentsReceived: number = 0;
+
+  // Date Filter Properties
+  filterStartDate!: Date;
+  filterEndDate!: Date;
 
   // Bar Chart: Loans per Client
   public barChartOptions: ChartConfiguration['options'] = {
@@ -67,27 +74,38 @@ export class DashboardViewComponent implements OnInit {
 
   constructor(
     private clientService: ClientService,
-    private loanService: LoanService
+    private loanService: LoanService,
+    private paymentService: PaymentService // Inject PaymentService
   ) { }
 
   ngOnInit(): void {
+    const today = new Date();
+    this.filterEndDate = new Date(today);
+    this.filterStartDate = new Date(today);
+    this.filterStartDate.setFullYear(today.getFullYear() - 1);
+
+    this.loadDashboardData();
+  }
+
+  loadDashboardData(): void {
     this.loadMetrics();
-    this.prepareBarChartData();
-    this.preparePieChartData();
+    this.prepareBarChartData(); // Will use unfiltered data for now
+    this.preparePieChartData();   // Will use unfiltered data for now
   }
 
   loadMetrics(): void {
-    const clients = this.clientService.getClients();
-    const loans = this.loanService.getLoans();
+    const clients = this.clientService.getClients(); // Unfiltered for now
+    const loans = this.loanService.getLoans(this.filterStartDate, this.filterEndDate);
 
-    this.totalClients = clients.length;
+    this.totalClients = clients.length; // Remains based on all clients, not date filtered
     this.totalLoans = loans.length;
     this.totalLoanedAmount = loans.reduce((sum, loan) => sum + loan.loanAmount, 0);
+    this.totalPaymentsReceived = this.paymentService.getTotalPaymentsReceived(this.filterStartDate, this.filterEndDate);
   }
 
   prepareBarChartData(): void {
-    const clients = this.clientService.getClients();
-    const loans = this.loanService.getLoans();
+    const clients = this.clientService.getClients(); // clientService.getClients() is not date filtered
+    const loans = this.loanService.getLoans(this.filterStartDate, this.filterEndDate);
     const clientLoanCounts: { [key: string]: number } = {};
 
     clients.forEach(client => {
@@ -105,8 +123,8 @@ export class DashboardViewComponent implements OnInit {
   }
 
   preparePieChartData(): void {
-    const loans = this.loanService.getLoans();
-    const clients = this.clientService.getClients();
+    const loans = this.loanService.getLoans(this.filterStartDate, this.filterEndDate);
+    const clients = this.clientService.getClients(); // clientService.getClients() is not date filtered
     
     const pieLabels: string[] = [];
     const pieData: number[] = [];
@@ -125,5 +143,35 @@ export class DashboardViewComponent implements OnInit {
   
   formatCurrency(amount: number): string {
     return amount.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  }
+
+  // Event handlers for date changes
+  onStartDateChange(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    // HTML date input value is 'yyyy-MM-dd'. Adding 'T00:00:00' to ensure it's parsed in local timezone.
+    this.filterStartDate = new Date(inputElement.value + 'T00:00:00');
+  }
+
+  onEndDateChange(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    // HTML date input value is 'yyyy-MM-dd'. Adding 'T00:00:00' to ensure it's parsed in local timezone.
+    this.filterEndDate = new Date(inputElement.value + 'T00:00:00');
+  }
+
+  // Method for the "Apply Filter" button
+  applyFiltersAndReloadData(): void {
+    // Ensure endDate is set to the end of the day for full inclusivity if needed by backend logic
+    // (already handled in services, but good to be mindful)
+    // For example: this.filterEndDate.setHours(23, 59, 59, 999);
+    this.loadDashboardData();
+  }
+
+  // Method for the "Reset Filter" button
+  resetFiltersAndReloadData(): void {
+    const today = new Date();
+    this.filterEndDate = new Date(today);
+    this.filterStartDate = new Date(today);
+    this.filterStartDate.setFullYear(today.getFullYear() - 1);
+    this.loadDashboardData();
   }
 }

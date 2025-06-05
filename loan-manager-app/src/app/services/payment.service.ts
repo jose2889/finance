@@ -158,4 +158,33 @@ export class PaymentService {
 
   // Method to apply surplus to a new loan for a client (Conceptual - can be added later)
   // applySurplusToLoan(clientId: string, loanToApplyToId: string): boolean { ... }
+
+  public getTotalPaymentsReceived(startDate?: Date, endDate?: Date): number {
+    let payments = this.getPaymentsFromStorage();
+
+    if (startDate && endDate) {
+      // Ensure endDate is inclusive by setting time to end of day
+      const inclusiveEndDate = new Date(endDate);
+      inclusiveEndDate.setHours(23, 59, 59, 999);
+
+      payments = payments.filter(payment => {
+        const paymentDate = new Date(payment.paymentDate); // Ensure it's a Date object
+        return paymentDate >= startDate && paymentDate <= inclusiveEndDate;
+      });
+    } else if (startDate) {
+      payments = payments.filter(payment => {
+        const paymentDate = new Date(payment.paymentDate);
+        return paymentDate >= startDate;
+      });
+    } else if (endDate) {
+      const inclusiveEndDate = new Date(endDate);
+      inclusiveEndDate.setHours(23, 59, 59, 999);
+      payments = payments.filter(payment => {
+        const paymentDate = new Date(payment.paymentDate);
+        return paymentDate <= inclusiveEndDate;
+      });
+    }
+
+    return payments.reduce((total, payment) => total + payment.amountPaid, 0);
+  }
 }

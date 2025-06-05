@@ -68,8 +68,26 @@ export class LoanService {
     console.log('[LoanService] Data supposedly saved by LocalStorageService.');
   }
 
-  getLoans(): Loan[] {
-    return this.getLoansFromStorage();
+  getLoans(startDate?: Date, endDate?: Date): Loan[] {
+    let loans = this.getLoansFromStorage();
+
+    if (startDate && endDate) {
+      const inclusiveEndDate = new Date(endDate);
+      inclusiveEndDate.setHours(23, 59, 59, 999); // Make endDate inclusive
+
+      loans = loans.filter(loan => {
+        const loanStartDate = new Date(loan.startDate);
+        return loanStartDate >= startDate && loanStartDate <= inclusiveEndDate;
+      });
+    } else if (startDate) {
+      loans = loans.filter(loan => new Date(loan.startDate) >= startDate);
+    } else if (endDate) {
+      const inclusiveEndDate = new Date(endDate);
+      inclusiveEndDate.setHours(23, 59, 59, 999);
+      loans = loans.filter(loan => new Date(loan.startDate) <= inclusiveEndDate);
+    }
+    // If neither startDate nor endDate is provided, all loans are returned.
+    return loans;
   }
 
   getLoanById(id: string): Loan | undefined {

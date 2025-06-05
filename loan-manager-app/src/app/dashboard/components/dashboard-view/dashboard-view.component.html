@@ -1,6 +1,30 @@
 <div class="container dashboard-container">
   <h2>Panel de Control</h2>
 
+  <div class="filters-section card mb-4">
+    <h4 class="card-header">Filtros</h4>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <label for="filterStartDate">Fecha Inicio:</label>
+          <input type="date" id="filterStartDate" class="form-control"
+                 [value]="filterStartDate | date:'yyyy-MM-dd'"
+                 (change)="onStartDateChange($event)">
+        </div>
+        <div class="col-md-4">
+          <label for="filterEndDate">Fecha Fin:</label>
+          <input type="date" id="filterEndDate" class="form-control"
+                 [value]="filterEndDate | date:'yyyy-MM-dd'"
+                 (change)="onEndDateChange($event)">
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+          <button type="button" class="button button-primary me-2" (click)="applyFiltersAndReloadData()">Aplicar Filtro</button>
+          <button type="button" class="button button-secondary" (click)="resetFiltersAndReloadData()">Restablecer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="metrics-summary">
     <div class="metric-card">
       <h3>Total de Clientes</h3>
@@ -13,6 +37,10 @@
     <div class="metric-card">
       <h3>Monto Total Prestado</h3>
       <p>{{ formatCurrency(totalLoanedAmount) }}</p>
+    </div>
+    <div class="metric-card">
+      <h3>Total Pagos Recibidos</h3>
+      <p>{{ formatCurrency(totalPaymentsReceived) }}</p>
     </div>
   </div>
 
