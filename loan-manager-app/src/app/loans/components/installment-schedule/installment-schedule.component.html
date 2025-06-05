@@ -29,7 +29,7 @@
         <td>{{ formatCurrency(inst.principal) }}</td>
         <td>{{ formatCurrency(inst.interest) }}</td>
         <td>{{ formatCurrency(inst.remainingBalance) }}</td>
-        <td>{{ inst.status }}</td> <!-- Status as text -->
+        <td>{{ inst.status | translateInstallmentStatus }}</td> <!-- Status as text -->
       </tr>
     </tbody>
   </table>

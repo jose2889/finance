@@ -98,6 +98,10 @@ export class PaymentFormComponent implements OnInit {
       this.router.navigate(['/loans']);
     }
   }
+
+  goToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
   
   formatCurrency(amount: number | undefined | null): string { // Allow undefined or null
      if (amount === null || amount === undefined) return '';

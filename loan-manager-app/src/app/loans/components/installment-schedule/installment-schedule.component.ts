@@ -6,11 +6,12 @@ import { ClientService } from '../../../services/client.service'; // Adjusted pa
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PaymentListComponent } from '../payment-list/payment-list.component'; // Import PaymentListComponent
+import { TranslateInstallmentStatusPipe } from '../../../pipes/translate-installment-status.pipe'; // Import the new pipe
 
 @Component({
   selector: 'app-installment-schedule',
   standalone: true,
-  imports: [CommonModule, RouterModule, PaymentListComponent], // Add PaymentListComponent to imports
+  imports: [CommonModule, RouterModule, PaymentListComponent, TranslateInstallmentStatusPipe], // Add the new pipe to imports
   templateUrl: './installment-schedule.component.html',
   styleUrls: ['./installment-schedule.component.scss']
 })
