@@ -4,22 +4,23 @@
   <div class="filters-section card mb-4">
     <h4 class="card-header">Filtros</h4>
     <div class="card-body">
-      <div class="row">
-        <div class="col-md-4">
-          <label for="filterStartDate">Fecha Inicio:</label>
+      <div style="display: flex; align-items: center; flex-wrap: wrap; gap: 15px;">
+        <div class="filter-item">
+          <label for="filterStartDate" style="margin-right: 5px; display: block; margin-bottom: 2px;">Fecha Inicio:</label>
           <input type="date" id="filterStartDate" class="form-control"
                  [value]="filterStartDate | date:'yyyy-MM-dd'"
                  (change)="onStartDateChange($event)">
         </div>
-        <div class="col-md-4">
-          <label for="filterEndDate">Fecha Fin:</label>
+        <div class="filter-item">
+          <label for="filterEndDate" style="margin-right: 5px; display: block; margin-bottom: 2px;">Fecha Fin:</label>
           <input type="date" id="filterEndDate" class="form-control"
                  [value]="filterEndDate | date:'yyyy-MM-dd'"
                  (change)="onEndDateChange($event)">
         </div>
-        <div class="col-md-4 d-flex align-items-end">
-          <button type="button" class="button button-primary me-2" (click)="applyFiltersAndReloadData()">Aplicar Filtro</button>
-          <button type="button" class="button button-secondary" (click)="resetFiltersAndReloadData()">Restablecer</button>
+        <div class="filter-item d-flex align-items-end" style="margin-top: auto;">
+          {/* Using margin-top: auto for the button group to align with inputs if labels make them taller */}
+          <button type="button" class="button button-primary" (click)="applyFiltersAndReloadData()">Aplicar Filtro</button>
+          <button type="button" class="button button-secondary" (click)="resetFiltersAndReloadData()" style="margin-left: 8px;">Restablecer</button>
         </div>
       </div>
     </div>
