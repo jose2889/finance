@@ -13,5 +13,6 @@ export interface Payment {
   appliedToInstallments: Array<{
     installmentNumber: number; // The installment number this portion applies to
     amountApplied: number;     // How much of this payment was applied to that installment
+    notes?: string;           // Optional notes for this specific installment application
   }>;
 }

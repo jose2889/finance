@@ -16,14 +16,14 @@
             <div><strong>Monto Principal:</strong> {{ formatCurrency(loan.loanAmount) }}</div>
             <div><strong>Tasa Interés:</strong> {{ formatInterestRate(loan.interestRate) }}</div>
             <div><strong>Plazo (Meses):</strong> {{ loan.termMonths }}</div>
-            <div><strong>Fecha Inicio:</strong> {{ formatDate(loan.startDate) }}</div>
+            <div><strong>Fecha Inicio:</strong> {{ loan.startDate | date:'dd MMM yyyy' }}</div>
             <div *ngIf="loan.purpose"><strong>Propósito:</strong> {{ loan.purpose }}</div>
           </div>
           <div class="loan-actions">
             <button (click)="viewLoanDetails(loan.id)" class="button button-secondary">
               <i class="fas fa-eye"></i> Ver Detalles/Pagos
             </button>
-            {/* Add other actions like Edit/Delete later if needed */}
+            <!-- Add other actions like Edit/Delete later if needed -->
           </div>
         </div>
       </li>
@@ -38,4 +38,4 @@
       </div>
     </div>
   </ng-template>
-</div>
+</div> 

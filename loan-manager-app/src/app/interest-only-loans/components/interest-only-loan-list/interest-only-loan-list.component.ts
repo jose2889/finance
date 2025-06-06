@@ -67,13 +67,6 @@ export class InterestOnlyLoanListComponent implements OnInit {
     return amount.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
 
-  formatDate(date: Date | string | undefined): string {
-    if (!date) return 'N/A';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    // Basic date format, can be customized further e.g. using DatePipe or toLocaleDateString options
-    return dateObj.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
-  }
-
   formatInterestRate(rate: number): string {
     // Assuming 'rate' is stored as a decimal (e.g., 0.02 for 2% monthly)
     // and needs to be displayed as a percentage.

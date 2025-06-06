@@ -104,12 +104,6 @@ export class InterestOnlyLoanDetailComponent implements OnInit {
     return amount.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 });
   }
 
-  formatDate(date: Date | string | undefined): string {
-    if (!date) return 'N/A';
-    const dateObj = typeof date === 'string' ? new Date(date) : date;
-    return dateObj.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
-  }
-
   formatInterestRate(rate: number | undefined): string {
     if (rate === undefined) return 'N/A';
     // Assuming 'rate' is stored as a decimal (e.g., 0.02 for 2% monthly)

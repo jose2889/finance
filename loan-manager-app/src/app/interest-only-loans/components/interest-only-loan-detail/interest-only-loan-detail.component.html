@@ -25,7 +25,7 @@
         <div class="col-md-6">
           <p><strong>Tasa de Interés:</strong> {{ formatInterestRate(loan.interestRate) }}</p>
           <p><strong>Plazo Original (Meses):</strong> {{ loan.termMonths }}</p>
-          <p><strong>Fecha de Inicio:</strong> {{ formatDate(loan.startDate) }}</p>
+          <p><strong>Fecha de Inicio:</strong> {{ loan.startDate | date:'dd MMM yyyy' }}</p>
           <p *ngIf="loan.purpose"><strong>Propósito:</strong> {{ loan.purpose }}</p>
           <p><strong>Próximo Pago Estimado de Interés:</strong> {{ formatCurrency(nextExpectedInterestPaymentAmount) }}</p>
         </div>
@@ -51,7 +51,7 @@
         <tbody>
           <tr *ngFor="let inst of loan.installments">
             <td>{{ inst.installmentNumber }}</td>
-            <td>{{ formatDate(inst.dueDate) }}</td>
+            <td>{{ inst.dueDate | date:'dd MMM yyyy' }}</td>
             <td>{{ formatCurrency(inst.amount) }}</td>
             <td>{{ formatCurrency(inst.paidAmount || 0) }}</td>
             <td>{{ inst.status | translateInstallmentStatus }}</td>
