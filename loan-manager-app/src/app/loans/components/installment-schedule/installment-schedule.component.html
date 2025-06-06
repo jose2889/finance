@@ -6,6 +6,7 @@
     </div>
     <p><strong>Monto:</strong> {{ formatCurrency(loan.loanAmount) }} | <strong>Tasa:</strong> {{ loan.interestRate * 100 }}% | <strong>Plazo:</strong> {{ loan.termMonths }} meses</p>
     <button (click)="goBack()" class="button button-secondary mb-3">Volver a la Lista de Préstamos</button>
+    <button (click)="navigateToAddPayment()" class="button button-primary mb-3" style="margin-left: 10px;">Registrar Nuevo Pago</button>
   </div>
   <table>
     <thead>

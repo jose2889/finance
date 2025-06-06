@@ -59,4 +59,14 @@ export class InstallmentScheduleComponent implements OnInit {
   goBack(): void {
    this.router.navigate(['/loans']);
   }
+
+  navigateToAddPayment(): void {
+    if (this.loanId) {
+      this.router.navigate(['/loans', this.loanId, 'add-payment']);
+    } else {
+      console.error('Error: loanId no está disponible para navegar a registrar pago.');
+      // Optionally, navigate to an error page or back to loans list as a fallback
+      // this.router.navigate(['/loans']);
+    }
+  }
 }
