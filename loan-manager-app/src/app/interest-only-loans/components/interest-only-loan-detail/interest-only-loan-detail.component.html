@@ -17,10 +17,10 @@
       <p><strong>Cliente:</strong> {{ client?.firstName }} {{ client?.lastName || 'N/A' }}</p>
       <p><strong>Monto Original del Préstamo:</strong> {{ formatCurrency(loan.loanAmount) }}</p>
       <p><strong>Tasa de Interés Mensual:</strong> {{ formatInterestRate(loan.interestRate) }}</p>
-      <p><strong>Plazo Original (Meses):</strong> {{ loan.termMonths }}</p>
+      <p><strong>Plazo Original (Meses):</strong> {{ loan.termMonths ? loan.termMonths : 'N/A (Interés Simple)' }}</p>
       <p><strong>Fecha de Inicio:</strong> {{ formatDate(loan.startDate) }}</p>
       <p *ngIf="loan.purpose"><strong>Propósito:</strong> {{ loan.purpose }}</p>
-      <p><strong>Próximo Pago Estimado de Interés:</strong> {{ formatCurrency(nextExpectedInterestPaymentAmount) }}</p>
+      <!-- Removed Próximo Pago Estimado de Interés, as this will be shown in the projected installments table -->
 
       <button (click)="goBack()" class="button button-secondary mb-3">
         Volver a la Lista
@@ -42,14 +42,14 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let inst of loan.installments">
+        <tr *ngFor="let inst of projectedInstallments">
           <td>{{ inst.installmentNumber }}</td>
           <td>{{ formatDate(inst.dueDate) }}</td>
           <td>{{ formatCurrency(inst.amount) }}</td>
           <td>{{ formatCurrency(inst.paidAmount || 0) }}</td>
           <td>{{ inst.status | translateInstallmentStatus }}</td>
         </tr>
-        <tr *ngIf="!loan.installments || loan.installments.length === 0">
+        <tr *ngIf="!projectedInstallments || projectedInstallments.length === 0">
           <td colspan="5" class="text-center">No hay un plan de cuotas de interés generado para este préstamo.</td>
         </tr>
       </tbody>

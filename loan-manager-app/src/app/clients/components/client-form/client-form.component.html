@@ -3,14 +3,14 @@
   <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
     <div>
       <label for="firstName">Nombres:</label>
-      <input id="firstName" type="text" formControlName="firstName" class="form-control">
+      <input id="firstName" formControlName="firstName" class="form-control">
       <div *ngIf="formControls['firstName'].touched && formControls['firstName'].invalid">
         <small *ngIf="formControls['firstName'].errors?.['required']">El nombre es obligatorio.</small>
       </div>
     </div>
     <div>
       <label for="lastName">Apellidos:</label>
-      <input id="lastName" type="text" formControlName="lastName" class="form-control">
+      <input id="lastName" formControlName="lastName" class="form-control">
       <div *ngIf="formControls['lastName'].touched && formControls['lastName'].invalid">
         <small *ngIf="formControls['lastName'].errors?.['required']">El apellido es obligatorio.</small>
       </div>
@@ -28,7 +28,7 @@
     </div>
     <div>
       <label for="address">Dirección:</label>
-      <textarea id="address" formControlName="address" class="form-control"></textarea>
+      <textarea id="address" formControlName="address"></textarea>
     </div>
     <div class="form-actions">
       <button type="submit" class="button button-primary" [disabled]="clientForm.invalid">{{ isEditMode ? 'Actualizar' : 'Guardar' }} Cliente</button>

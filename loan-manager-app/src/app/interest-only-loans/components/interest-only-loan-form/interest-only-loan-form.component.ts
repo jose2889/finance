@@ -41,7 +41,7 @@ export class InterestOnlyLoanFormComponent implements OnInit {
       clientId: ['', Validators.required],
       loanAmount: ['', [Validators.required, Validators.min(1)]],
       monthlyInterestRate: ['', [Validators.required, Validators.min(0.01), Validators.max(50)]], // User enters e.g. 2 for 2% monthly
-      termMonths: ['', [Validators.required, Validators.min(1)]], // For initial schedule generation
+      // termMonths removed as it's no longer a primary input for this loan type
       startDate: [formattedDate, Validators.required], // Set default value
       purpose: [''] // Optional
     });
@@ -66,7 +66,7 @@ export class InterestOnlyLoanFormComponent implements OnInit {
       clientId: loanFormData.clientId,
       loanAmount: parseFloat(loanFormData.loanAmount),
       monthlyInterestRate: decimalMonthlyRate, // Pass the converted decimal rate
-      termMonths: parseInt(loanFormData.termMonths, 10),
+      // termMonths removed
       startDate: new Date(loanFormData.startDate), // Ensure it's a Date object
       purpose: loanFormData.purpose
       // loanType is set by the service method

@@ -26,7 +26,7 @@ export class InterestOnlyLoanDetailComponent implements OnInit {
   loan: Loan | undefined;
   client: Client | undefined;
   loanId: string | null = null;
-  nextExpectedInterestPaymentAmount: number = 0;
+  projectedInstallments: Installment[] = []; // Added
   errorMessage: string | null = null;
 
   constructor(
@@ -43,7 +43,8 @@ export class InterestOnlyLoanDetailComponent implements OnInit {
       if (fetchedLoan && fetchedLoan.loanType === LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
         this.loan = fetchedLoan;
         this.client = this.clientService.getClientById(this.loan.clientId);
-        this.calculateNextExpectedInterest();
+        this.projectedInstallments = this.loanService.getProjectedInterestInstallments(this.loan); // Added
+        // this.calculateNextExpectedInterest(); // Removed
       } else if (fetchedLoan) {
         this.errorMessage = 'Este préstamo no es del tipo "Interés Simple con Devengo Diario".';
         console.error('Error: Loan type is not INTEREST_ONLY_DAILY_ACCRUAL. Loan ID:', this.loanId);
@@ -59,29 +60,29 @@ export class InterestOnlyLoanDetailComponent implements OnInit {
     }
   }
 
-  calculateNextExpectedInterest(): void {
-    if (this.loan && this.loan.loanAmount > 0) {
-      // Find the first pending installment from the schedule
-      const firstPending = this.loan.installments
-        .filter(inst => inst.status === InstallmentStatus.Pending)
-        .sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
+  // calculateNextExpectedInterest(): void { // Removed method
+  //   if (this.loan && this.loan.loanAmount > 0) {
+  //     // Find the first pending installment from the schedule
+  //     const firstPending = this.loan.installments
+  //       .filter(inst => inst.status === InstallmentStatus.Pending)
+  //       .sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
 
-      if (firstPending) {
-        // If there's a pending installment, its amount is the next expected interest
-        // (assuming it was correctly calculated/recalculated after any principal paydown)
-        this.nextExpectedInterestPaymentAmount = firstPending.amount;
-      } else if (this.loan.installments.every(inst => inst.status === InstallmentStatus.Paid) && this.loan.loanAmount > 0) {
-        // All scheduled installments paid, but principal remains. Calculate one month's interest on current principal.
-        // This assumes loan.interestRate stores the monthly rate for this loan type.
-        this.nextExpectedInterestPaymentAmount = this.loanService.calculateAccruedInterestForOneMonth(this.loan.loanAmount, this.loan.interestRate);
-      } else {
-        // No pending installments and principal might be zero or loan ended.
-        this.nextExpectedInterestPaymentAmount = 0;
-      }
-    } else {
-      this.nextExpectedInterestPaymentAmount = 0;
-    }
-  }
+  //     if (firstPending) {
+  //       // If there's a pending installment, its amount is the next expected interest
+  //       // (assuming it was correctly calculated/recalculated after any principal paydown)
+  //       this.nextExpectedInterestPaymentAmount = firstPending.amount;
+  //     } else if (this.loan.installments.every(inst => inst.status === InstallmentStatus.Paid) && this.loan.loanAmount > 0) {
+  //       // All scheduled installments paid, but principal remains. Calculate one month's interest on current principal.
+  //       // This assumes loan.interestRate stores the monthly rate for this loan type.
+  //       this.nextExpectedInterestPaymentAmount = this.loanService.calculateAccruedInterestForOneMonth(this.loan.loanAmount, this.loan.interestRate);
+  //     } else {
+  //       // No pending installments and principal might be zero or loan ended.
+  //       this.nextExpectedInterestPaymentAmount = 0;
+  //     }
+  //   } else {
+  //     this.nextExpectedInterestPaymentAmount = 0;
+  //   }
+  // }
 
   navigateToAddPayment(): void {
     if (this.loanId) {

@@ -232,39 +232,134 @@ export class LoanService {
     return parseFloat((principal * dailyRate * 30).toFixed(2));
   }
 
-  private generateInitialInterestOnlyInstallmentSchedule(
-    principal: number,
-    monthlyInterestRate: number,
-    termMonths: number,
-    startDate: Date,
-    // loanType: LoanType // loanType param might not be needed if method is specific
-  ): Installment[] {
-    const installments: Installment[] = [];
-    if (termMonths <= 0) return installments;
+  public getProjectedInterestInstallments(loan: Loan): Installment[] {
+    if (loan.loanType !== LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
+      console.warn(`getProjectedInterestInstallments called for non-interest-only loan: ${loan.id}`);
+      return [];
+    }
 
-    const estimatedMonthlyInterest = this.calculateAccruedInterestForOneMonth(principal, monthlyInterestRate);
+    const projectedInstallments: Installment[] = [];
+    const currentDate = new Date();
+    // Do not include time in currentDate for month/year comparisons to avoid off-by-one issues with dueDate.
+    currentDate.setHours(0, 0, 0, 0);
 
-    for (let i = 1; i <= termMonths; i++) {
-      const dueDate = new Date(startDate);
-      dueDate.setMonth(startDate.getMonth() + i);
+    const loanStartDate = new Date(loan.startDate);
+    loanStartDate.setHours(0, 0, 0, 0); // Normalize start date as well
 
-      installments.push({
-        installmentNumber: i,
+    // Calculate how many full months have passed since the loan started.
+    // If a loan starts Jan 15th, and today is Feb 14th, 0 full months for due dates (1st due date is Feb 15th).
+    // If today is Feb 15th, 1 full month for due dates (1st due date is Feb 15th).
+    // If today is Mar 14th, 1 full month for due dates (1st due date Feb 15th is past, 2nd Mar 15th is current).
+
+    let monthsPassed = (currentDate.getFullYear() - loanStartDate.getFullYear()) * 12;
+    monthsPassed += currentDate.getMonth() - loanStartDate.getMonth();
+    // If the current day of the month is less than the start day of the month,
+    // it means the full month period for the current month hasn't completed yet relative to the start day.
+    // However, the due date is typically loanStartDate.getDate() of each following month.
+    // Example: Loan starts Jan 15.
+    // Due Feb 15, Mar 15, etc.
+    // If today is Feb 10, monthsPassed = 1. We should show Feb 15 (Pending).
+    // If today is Feb 15, monthsPassed = 1. We should show Feb 15 (Pending/Overdue).
+    // If today is Feb 16, monthsPassed = 1. We should show Feb 15 (Overdue), Mar 15 (Pending).
+
+    const loanStartDay = loanStartDate.getDate();
+
+    // Iterate for each period that has a due date up to the current month, or slightly beyond.
+    // Let's project for monthsPassed + 1 (to show current/next) and potentially one more.
+    // Loop for a fixed number of past/current/near-future installments, e.g., monthsPassed + 2.
+    // Max 12 projections for sanity.
+    const maxProjections = Math.min(monthsPassed + 2, 12);
+
+
+    for (let periodIndex = 0; periodIndex <= monthsPassed +1 ; periodIndex++) { // Iterate up to one month beyond "monthsPassed"
+      if (projectedInstallments.length >= 12 && periodIndex > 0) break; // Limit to 12 projections total
+
+      const installmentNumber = periodIndex + 1;
+      const dueDate = new Date(loanStartDate);
+      dueDate.setMonth(loanStartDate.getMonth() + installmentNumber);
+      dueDate.setHours(0,0,0,0); // Normalize due date
+
+      // If loan started late in month (e.g. 31st) and next month is shorter, date can roll over.
+      // Correct if dueDate's month rolled over beyond the intended month.
+      // Example: Loan start Jan 31. dueDate for Feb should be Feb 28/29, not Mar 2/3.
+      // A simple way to keep due day consistent is to set day to loanStartDay,
+      // but this needs careful handling if loanStartDay > days in current due month.
+      // For now, direct month addition is used. Standard new Date().setMonth() handles rollover.
+
+      const interestAmount = this.calculateAccruedInterestForOneMonth(loan.loanAmount, loan.interestRate);
+
+      let status = InstallmentStatus.Pending;
+      if (dueDate < currentDate) {
+        status = InstallmentStatus.Overdue;
+      } else if (dueDate.getFullYear() === currentDate.getFullYear() &&
+                 dueDate.getMonth() === currentDate.getMonth() &&
+                 dueDate.getDate() <= currentDate.getDate()) {
+        // If due date is today or earlier in the current month (but not strictly < currentDate due to time normalization)
+        // This can be tricky. A simpler rule: if dueDate is not in the future, it's potentially Overdue.
+        // Let's refine: if dueDate is today or in the past, it's Overdue. Otherwise, Pending.
+        // The previous check `dueDate < currentDate` already covers past days.
+        // If dueDate is today, it's effectively 'due now', so Overdue if not paid. For projection, let's call it Pending.
+        // The current logic: if dueDate is strictly before today -> Overdue. Otherwise -> Pending.
+        // This means a due date of "today" will show as Pending. This is acceptable for projection.
+      }
+
+
+      projectedInstallments.push({
+        installmentNumber: installmentNumber,
         dueDate: dueDate,
-        amount: estimatedMonthlyInterest,
-        principal: 0, // Interest-only
-        interest: estimatedMonthlyInterest,
-        remainingBalance: principal, // Principal remains unchanged by these scheduled payments
-        status: InstallmentStatus.Pending,
-        paidAmount: 0,
+        amount: interestAmount,
+        principal: 0,
+        interest: interestAmount,
+        remainingBalance: loan.loanAmount,
+        status: status,
+        paidAmount: 0 // This is a projection, so paidAmount is assumed 0.
       });
     }
-    return installments;
+
+    // Ensure there's always at least one future/current pending installment if the loop didn't add one far enough.
+    // This is somewhat covered by monthsPassed + 1, but let's double check.
+    const lastProjectedInstallment = projectedInstallments[projectedInstallments.length -1];
+    if (projectedInstallments.length > 0 && lastProjectedInstallment.status === InstallmentStatus.Overdue && projectedInstallments.length < 12) {
+        const nextInstallmentNumber = lastProjectedInstallment.installmentNumber + 1;
+        const nextDueDate = new Date(loanStartDate);
+        nextDueDate.setMonth(loanStartDate.getMonth() + nextInstallmentNumber);
+        nextDueDate.setHours(0,0,0,0);
+        const nextInterestAmount = this.calculateAccruedInterestForOneMonth(loan.loanAmount, loan.interestRate);
+        projectedInstallments.push({
+            installmentNumber: nextInstallmentNumber,
+            dueDate: nextDueDate,
+            amount: nextInterestAmount,
+            principal: 0,
+            interest: nextInterestAmount,
+            remainingBalance: loan.loanAmount,
+            status: InstallmentStatus.Pending,
+            paidAmount: 0
+        });
+    }
+
+    if (projectedInstallments.length === 0 && loan.loanAmount > 0) { // Loan just started, project first interest payment
+        const firstDueDate = new Date(loanStartDate);
+        firstDueDate.setMonth(loanStartDate.getMonth() + 1);
+        firstDueDate.setHours(0,0,0,0);
+        const firstInterestAmount = this.calculateAccruedInterestForOneMonth(loan.loanAmount, loan.interestRate);
+         projectedInstallments.push({
+            installmentNumber: 1,
+            dueDate: firstDueDate,
+            amount: firstInterestAmount,
+            principal: 0,
+            interest: firstInterestAmount,
+            remainingBalance: loan.loanAmount,
+            status: InstallmentStatus.Pending,
+            paidAmount: 0
+        });
+    }
+
+    return projectedInstallments;
   }
 
   public addInterestOnlyDailyAccrualLoan(
-    loanData: Omit<Loan, 'id' | 'installments' | 'loanType' | 'interestRate'> &
-              { monthlyInterestRate: number; startDate: string | Date; clientId: string; loanAmount: number; termMonths: number; purpose?: string }
+    loanData: Omit<Loan, 'id' | 'installments' | 'loanType' | 'interestRate' | 'termMonths'> &
+              { monthlyInterestRate: number; startDate: string | Date; clientId: string; loanAmount: number; purpose?: string }
   ): Loan {
     const loans = this.getLoansFromStorage();
 
@@ -276,17 +371,11 @@ export class LoanService {
       clientId: loanData.clientId,
       loanAmount: loanData.loanAmount,
       interestRate: loanData.monthlyInterestRate, // Storing monthly rate directly
-      termMonths: loanData.termMonths,
+      // termMonths is now optional and not set here for interest-only loans.
       startDate: processedStartDate,
       loanType: LoanType.INTEREST_ONLY_DAILY_ACCRUAL,
       purpose: loanData.purpose,
-      installments: this.generateInitialInterestOnlyInstallmentSchedule(
-        loanData.loanAmount, // principal for schedule generation
-        loanData.monthlyInterestRate,
-        loanData.termMonths,
-        processedStartDate
-        // LoanType.INTEREST_ONLY_DAILY_ACCRUAL // Not strictly needed by generateInitialInterestOnlyInstallmentSchedule
-      ),
+      installments: [] // Installments will be dynamically projected, not stored as a fixed schedule initially.
     };
     loans.push(newLoan);
     this.saveLoansToStorage(loans);
