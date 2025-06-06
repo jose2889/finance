@@ -26,25 +26,19 @@ export class InterestOnlyLoanFormComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.clients = this.clientService.getClients();
-    this.initForm();
-  }
-
-  initForm(): void {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = ('0' + (today.getMonth() + 1)).slice(-2); // Months are 0-indexed
-    const day = ('0' + today.getDate()).slice(-2);
-    const formattedDate = `${year}-${month}-${day}`;
-
+    this.loadClients();
     this.loanForm = this.fb.group({
       clientId: ['', Validators.required],
-      loanAmount: ['', [Validators.required, Validators.min(1)]],
-      monthlyInterestRate: ['', [Validators.required, Validators.min(0.01), Validators.max(50)]], // User enters e.g. 2 for 2% monthly
-      // termMonths removed as it's no longer a primary input for this loan type
-      startDate: [formattedDate, Validators.required], // Set default value
-      purpose: [''] // Optional
+      loanAmount: ['', [Validators.required, Validators.min(0.01)]],
+      interestRate: ['', [Validators.required, Validators.min(0.01)]],
+      termMonths: ['', [Validators.required, Validators.min(1)]],
+      startDate: [new Date().toISOString().substring(0, 10), Validators.required],
+      purpose: ['']
     });
+  }
+
+  loadClients(): void {
+    this.clients = this.clientService.getClients();
   }
 
   get formControls() {
@@ -58,7 +52,7 @@ export class InterestOnlyLoanFormComponent implements OnInit {
     }
 
     const loanFormData = this.loanForm.value;
-    const decimalMonthlyRate = parseFloat(loanFormData.monthlyInterestRate) / 100;
+    const decimalMonthlyRate = parseFloat(loanFormData.interestRate) / 100;
 
     // Prepare the data structure expected by addInterestOnlyDailyAccrualLoan
     // Ensure all required fields from the Omit<> type and the additional ones are present
@@ -66,7 +60,7 @@ export class InterestOnlyLoanFormComponent implements OnInit {
       clientId: loanFormData.clientId,
       loanAmount: parseFloat(loanFormData.loanAmount),
       monthlyInterestRate: decimalMonthlyRate, // Pass the converted decimal rate
-      // termMonths removed
+      termMonths: parseFloat(loanFormData.termMonths),
       startDate: new Date(loanFormData.startDate), // Ensure it's a Date object
       purpose: loanFormData.purpose
       // loanType is set by the service method
