@@ -139,121 +139,126 @@ export class PaymentService {
         // loanUpdated is already true
       }
       // End of INTEREST_ONLY_DAILY_ACCRUAL logic block
+    }
 
+    // End of INTEREST_ONLY_DAILY_ACCRUAL logic block (this comment was part of it)
     } else {
       // Existing AMORTIZED loan logic
       // Note: 'remainingPaymentAmount' and 'appliedToInstallments' are now named
-      // 'remainingPaymentAmount' and 'appliedToInstallmentsForPaymentRecord' respectively.
-      // The original logic used 'appliedToInstallments', so we'll map back or use the new name.
-      // For consistency, let's ensure the variable names match inside this block or map them.
-      // The original code's variable names are fine to reuse here, shadowed by the outer scope.
-      // Let's use the new 'appliedToInstallmentsForPaymentRecord' for consistency with the new block.
-
-      const allInstallmentsSorted = [...loan.installments].sort((a, b) => a.installmentNumber - b.installmentNumber);
-
-      for (const inst of allInstallmentsSorted) {
-        if (remainingPaymentAmount <= 0) {
-        break; // No more payment amount to apply
-      }
-
-      if (inst.status === InstallmentStatus.Paid) {
-        // Typically skip fully paid installments.
-        // Business rule: Can we overpay a paid installment to create surplus from it? Not for now.
-        continue;
-      }
-
-      const amountAlreadyPaid = inst.paidAmount || 0;
-      const amountActuallyDueForInstallment = inst.amount - amountAlreadyPaid;
-
-      if (amountActuallyDueForInstallment <= 0) {
-        // This installment is already effectively paid off or was mis-statused.
-        // We know inst.status was not 'Paid' when the loop iteration began (due to the check at loop start).
-        // So, if it's now determined to be fully covered by its paidAmount, update status.
-        inst.status = InstallmentStatus.Paid;
-        loanUpdated = true; // Status is changing from non-Paid to Paid.
-        continue;
-      }
-
-      const amountToApplyToThisInstallment = Math.min(remainingPaymentAmount, amountActuallyDueForInstallment);
-
-      if (amountToApplyToThisInstallment > 0) {
-        inst.paidAmount = amountAlreadyPaid + amountToApplyToThisInstallment;
-        loanUpdated = true;
-
-        appliedToInstallmentsForPaymentRecord.push({
-          installmentNumber: inst.installmentNumber,
-          amountApplied: amountToApplyToThisInstallment
-        });
-
-        console.log(`[PaymentService] Applied ${amountToApplyToThisInstallment} to inst #${inst.installmentNumber}. New paidAmount: ${inst.paidAmount}`);
-
-        if (inst.paidAmount >= inst.amount) {
-          // The installment is now fully paid (or overpaid by this payment).
-          // We know inst.status was not 'Paid' when the loop iteration began.
-          inst.status = InstallmentStatus.Paid;
-          // loanUpdated is already true because inst.paidAmount was just changed.
-          console.log(`[PaymentService] Installment ${inst.installmentNumber} for loan ${loanId} marked as Paid.`);
-        }
-        // Note: Overdue status would need to be checked/updated based on paymentDate vs dueDate
-        // if an overdue installment becomes partially or fully paid.
-        // For now, only Paid status is set. If it was Overdue and now partially paid, it remains Overdue.
-        // A separate process or rule might be needed to change Overdue to Pending if partially paid on time.
-
-        remainingPaymentAmount -= amountToApplyToThisInstallment;
-      }
-    }
-
-    // Handle surplus if any (This logic is now common to both loan types)
-    // For AMORTIZED loans (since this is in the 'else' block for non-INTEREST_ONLY_DAILY_ACCRUAL)
-    if (remainingPaymentAmount > 0) {
-      // Surplus goes to client surplus account.
-      // For INTEREST_ONLY, surplus was already applied to principal.
-      // If remainingPaymentAmount > 0 for INTEREST_ONLY, it means an overpayment beyond principal, which is an edge case not handled yet (e.g. negative loan.loanAmount).
-      // For now, only apply to client surplus for AMORTIZED.
-      let surpluses = this.getClientSurplusesFromStorage();
-      let clientSurplus = surpluses.find(s => s.clientId === loan.clientId);
-      if (clientSurplus) {
-        clientSurplus.surplusAmount += remainingPaymentAmount;
-        clientSurplus.lastUpdated = new Date();
-      } else {
-        clientSurplus = {
-          clientId: loan.clientId,
-          surplusAmount: remainingPaymentAmount,
-          lastUpdated: new Date()
-        };
-        surpluses.push(clientSurplus);
-      }
-      this.saveClientSurplusesToStorage(surpluses);
-      console.log(`[PaymentService] Client ${loan.clientId} surplus updated for AMORTIZED by ${remainingPaymentAmount}. New total surplus: ${clientSurplus.surplusAmount}`);
+    // //   // 'remainingPaymentAmount' and 'appliedToInstallmentsForPaymentRecord' respectively.
+    // //   // The original logic used 'appliedToInstallments', so we'll map back or use the new name.
+    // //   // For consistency, let's ensure the variable names match inside this block or map them.
+    // //   // The original code's variable names are fine to reuse here, shadowed by the outer scope.
+    // //   // Let's use the new 'appliedToInstallmentsForPaymentRecord' for consistency with the new block.
+    // //
+    // //   const allInstallmentsSorted = [...loan.installments].sort((a, b) => a.installmentNumber - b.installmentNumber);
+    // //
+    // //   for (const inst of allInstallmentsSorted) {
+    // //     if (remainingPaymentAmount <= 0) {
+    // //     break; // No more payment amount to apply
+    // //   }
+    // //
+    // //   if (inst.status === InstallmentStatus.Paid) {
+    // //     // Typically skip fully paid installments.
+    // //     // Business rule: Can we overpay a paid installment to create surplus from it? Not for now.
+    // //     continue;
+    // //   }
+    // //
+    // //   const amountAlreadyPaid = inst.paidAmount || 0;
+    // //   const amountActuallyDueForInstallment = inst.amount - amountAlreadyPaid;
+    // //
+    // //   if (amountActuallyDueForInstallment <= 0) {
+    // //     // This installment is already effectively paid off or was mis-statused.
+    // //     // We know inst.status was not 'Paid' when the loop iteration began (due to the check at loop start).
+    // //     // So, if it's now determined to be fully covered by its paidAmount, update status.
+    // //     inst.status = InstallmentStatus.Paid;
+    // //     loanUpdated = true; // Status is changing from non-Paid to Paid.
+    // //     continue;
+    // //   }
+    // //
+    // //   const amountToApplyToThisInstallment = Math.min(remainingPaymentAmount, amountActuallyDueForInstallment);
+    // //
+    // //   if (amountToApplyToThisInstallment > 0) {
+    // //     inst.paidAmount = amountAlreadyPaid + amountToApplyToThisInstallment;
+    // //     loanUpdated = true;
+    // //
+    // //     appliedToInstallmentsForPaymentRecord.push({
+    // //       installmentNumber: inst.installmentNumber,
+    // //       amountApplied: amountToApplyToThisInstallment
+    // //     });
+    // //
+    // //     console.log(`[PaymentService] Applied ${amountToApplyToThisInstallment} to inst #${inst.installmentNumber}. New paidAmount: ${inst.paidAmount}`);
+    // //
+    // //     if (inst.paidAmount >= inst.amount) {
+    // //       // The installment is now fully paid (or overpaid by this payment).
+    // //       // We know inst.status was not 'Paid' when the loop iteration began.
+    // //       inst.status = InstallmentStatus.Paid;
+    // //       // loanUpdated is already true because inst.paidAmount was just changed.
+    // //       console.log(`[PaymentService] Installment ${inst.installmentNumber} for loan ${loanId} marked as Paid.`);
+    // //     }
+    // //     // Note: Overdue status would need to be checked/updated based on paymentDate vs dueDate
+    // //     // if an overdue installment becomes partially or fully paid.
+    // //     // For now, only Paid status is set. If it was Overdue and now partially paid, it remains Overdue.
+    // //     // A separate process or rule might be needed to change Overdue to Pending if partially paid on time.
+    // //
+    // //     remainingPaymentAmount -= amountToApplyToThisInstallment;
+    // //   }
+    // // }
+    // //
+    // // // Handle surplus if any (This logic is now common to both loan types)
+    // // // For AMORTIZED loans (since this is in the 'else' block for non-INTEREST_ONLY_DAILY_ACCRUAL)
+    // // if (remainingPaymentAmount > 0) {
+    // //   // Surplus goes to client surplus account.
+    // //   // For INTEREST_ONLY, surplus was already applied to principal.
+    // //   // If remainingPaymentAmount > 0 for INTEREST_ONLY, it means an overpayment beyond principal, which is an edge case not handled yet (e.g. negative loan.loanAmount).
+    // //   // For now, only apply to client surplus for AMORTIZED.
+    // //   let surpluses = this.getClientSurplusesFromStorage();
+    // //   let clientSurplus = surpluses.find(s => s.clientId === loan.clientId);
+    // //   if (clientSurplus) {
+    // //     clientSurplus.surplusAmount += remainingPaymentAmount;
+    // //     clientSurplus.lastUpdated = new Date();
+    // //   } else {
+    // //     clientSurplus = {
+    // //       clientId: loan.clientId,
+    // //       surplusAmount: remainingPaymentAmount,
+    // //       lastUpdated: new Date()
+    // //     };
+    // //     surpluses.push(clientSurplus);
+    // //   }
+    // //   this.saveClientSurplusesToStorage(surpluses);
+    // //   console.log(`[PaymentService] Client ${loan.clientId} surplus updated for AMORTIZED by ${remainingPaymentAmount}. New total surplus: ${clientSurplus.surplusAmount}`);
     // Closing brace for the AMORTIZED loan 'if (remainingPaymentAmount > 0)' block is implicitly above.
     // The 'else' block for AMORTIZED loans (started on line 140) closes here.
     } // This closes the 'else' block for AMORTIZED loan logic.
 
-    // Common logic for saving payment record, loan updates, and returning success,
-    // now correctly outside the loan type specific if/else.
+    // Placeholder return for debugging, moved after the uncommented IF and ELSE blocks
+    return { success: false, message: 'Logic temporarily commented out for debugging.' };
 
-    // Save the payment record
-    const newPayment: Payment = {
-      id: crypto.randomUUID(),
-      loanId,
-      clientId: loan.clientId,
-      paymentDate,
-      amountPaid: paymentAmount, // Original total payment amount
-      appliedToInstallments: appliedToInstallmentsForPaymentRecord, // Use the consistently named variable
-      paymentMethod,
-      notes
-    };
-    const allPayments = this.getPaymentsFromStorage();
-    allPayments.push(newPayment);
-    this.savePaymentsToStorage(allPayments);
-    console.log(`[PaymentService] Payment ${newPayment.id} created.`);
-
-    // If installment statuses changed, save the updated loan
-    if (loanUpdated) {
-      this.loanService.updateLoan(loan); // updateLoan should internally call saveLoansToStorage
-      console.log(`[PaymentService] Loan ${loanId} updated due to status changes.`);
-    }
-    return { success: true, paymentId: newPayment.id, message: 'Payment processed.' }; // Final return for addPayment
+    // // // // // Common logic for saving payment record, loan updates, and returning success,
+    // // // // // now correctly outside the loan type specific if/else.
+    // // // //
+    // // // // // Save the payment record
+    // // // // const newPayment: Payment = {
+    // // // //   id: crypto.randomUUID(),
+    // // // //   loanId,
+    // // // //   clientId: loan.clientId,
+    // // // //   paymentDate,
+    // // // //   amountPaid: paymentAmount, // Original total payment amount
+    // // // //   appliedToInstallments: appliedToInstallmentsForPaymentRecord, // Use the consistently named variable
+    // // // //   paymentMethod,
+    // // // //   notes
+    // // // // };
+    // // // // const allPayments = this.getPaymentsFromStorage();
+    // // // // allPayments.push(newPayment);
+    // // // // this.savePaymentsToStorage(allPayments);
+    // // // // console.log(`[PaymentService] Payment ${newPayment.id} created.`);
+    // // // //
+    // // // // // If installment statuses changed, save the updated loan
+    // // // // if (loanUpdated) {
+    // // // //   this.loanService.updateLoan(loan); // updateLoan should internally call saveLoansToStorage
+    // // // //   console.log(`[PaymentService] Loan ${loanId} updated due to status changes.`);
+    // // // // }
+    // // // // return { success: true, paymentId: newPayment.id, message: 'Payment processed.' }; // Final return for addPayment
 } // End of addPayment method. MUST be on its own line.
 
 public getPaymentsForLoan(loanId: string): Payment[] { // Start of next method.

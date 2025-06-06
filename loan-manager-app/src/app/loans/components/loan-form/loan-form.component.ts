@@ -66,11 +66,11 @@ export class LoanFormComponent implements OnInit {
     // The service expects a Date object for startDate if not already
     const dataToSave = {
        ...loanData,
-       startDate: new Date(loanData.startDate), // Convert string date from input to Date obj
-       // Convert interest rate from percentage (e.g., 5) to decimal (e.g., 0.05)
-       interestRate: parseFloat(loanData.interestRate) / 100
+       loanAmount: parseFloat(loanData.loanAmount), // Ensure loanAmount is a number
+       interestRate: parseFloat(loanData.interestRate) / 100,
+       termMonths: parseInt(loanData.termMonths, 10), // Ensure termMonths is a number
+       startDate: new Date(loanData.startDate) // Convert string date from input to Date obj
     };
-
 
     this.loanService.addLoan(dataToSave);
     this.router.navigate(['/loans']);

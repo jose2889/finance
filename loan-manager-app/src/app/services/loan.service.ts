@@ -2,6 +2,16 @@ import { Injectable } from '@angular/core';
 import { Loan, Installment, InstallmentStatus, LoanType } from '../models'; // Adjust path, Import LoanType
 import { LocalStorageService } from './local-storage.service';
 
+// Interface for creating standard amortized loans
+interface AmortizedLoanCreationData {
+  clientId: string;
+  loanAmount: number;
+  interestRate: number; // Decimal form, e.g., 0.05 for 5% annual
+  termMonths: number;   // Required for amortized loans
+  startDate: Date | string;
+  purpose?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -103,17 +113,19 @@ export class LoanService {
     return loans.filter(loan => loan.clientId === clientId);
   }
 
-  addLoan(loanData: Omit<Loan, 'id' | 'installments' | 'loanType'> & { loanType?: LoanType }): Loan { // Adjust parameter if loanType is passed, or handle as default
+  addLoan(loanData: AmortizedLoanCreationData): Loan {
     const loans = this.getLoansFromStorage();
     const newLoan: Loan = {
-      ...loanData,
+      ...loanData, // Spread properties from AmortizedLoanCreationData
       id: crypto.randomUUID(),
-      loanType: loanData.loanType || LoanType.AMORTIZED, // Default to AMORTIZED if not provided
+      loanType: LoanType.AMORTIZED, // Explicitly set for this method
+      startDate: new Date(loanData.startDate), // Ensure startDate is a Date object
+      // termMonths is already part of loanData and is a number
       installments: this.calculateInstallments(
         loanData.loanAmount,
-        loanData.interestRate,
-        loanData.termMonths,
-        new Date(loanData.startDate) // Ensure startDate is a Date object
+        loanData.interestRate, // Assuming this is already annual decimal from form processing
+        loanData.termMonths,   // Now correctly a number
+        new Date(loanData.startDate)
       )
     };
     loans.push(newLoan);
@@ -125,20 +137,46 @@ export class LoanService {
     let loans = this.getLoansFromStorage();
     const index = loans.findIndex(loan => loan.id === updatedLoan.id);
     if (index > -1) {
-      // Recalculate installments if key parameters change
-      if (
-        loans[index].loanAmount !== updatedLoan.loanAmount ||
-        loans[index].interestRate !== updatedLoan.interestRate ||
-        loans[index].termMonths !== updatedLoan.termMonths ||
-        new Date(loans[index].startDate).getTime() !== new Date(updatedLoan.startDate).getTime()
-      ) {
-        updatedLoan.installments = this.calculateInstallments(
-          updatedLoan.loanAmount,
-          updatedLoan.interestRate,
-          updatedLoan.termMonths,
-          new Date(updatedLoan.startDate)
-        );
+      // Store the original loan for comparison
+      const originalLoan = loans[index];
+
+      if (updatedLoan.loanType === LoanType.AMORTIZED) {
+        // Original condition for recalculation:
+        if (
+          originalLoan.loanAmount !== updatedLoan.loanAmount ||
+          originalLoan.interestRate !== updatedLoan.interestRate ||
+          (updatedLoan.termMonths !== undefined && originalLoan.termMonths !== updatedLoan.termMonths) || // Check termMonths only if defined
+          new Date(originalLoan.startDate).getTime() !== new Date(updatedLoan.startDate).getTime()
+        ) {
+          // Ensure termMonths is valid for AMORTIZED loan recalculation
+          if (typeof updatedLoan.termMonths !== 'number' || updatedLoan.termMonths <= 0) {
+            console.error('Cannot update amortized loan to have invalid termMonths. Installments not recalculated.');
+            // Optionally, do not save or return an error, or save without recalculating if that's desired.
+            // For now, we'll proceed to save updatedLoan but its installments might be stale if termMonths was invalid.
+          } else {
+            updatedLoan.installments = this.calculateInstallments(
+              updatedLoan.loanAmount,
+              updatedLoan.interestRate,
+              updatedLoan.termMonths, // Now we've checked it's a number (or should be from form)
+              new Date(updatedLoan.startDate)
+            );
+          }
+        }
+      } else if (updatedLoan.loanType === LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
+        // For interest-only loans, principal reduction directly affects future interest calculations.
+        // The existing `getProjectedInterestInstallments` is for VIEWING projections.
+        // If loanAmount (principal) changes, the original `loan.installments` (if it was storing projections)
+        // might need to be cleared or re-evaluated.
+        // For now, if principal changes, we can clear the stored `updatedLoan.installments`
+        // so the detail view will regenerate them with the new principal.
+        if (originalLoan.loanAmount !== updatedLoan.loanAmount) {
+          updatedLoan.installments = []; // Clear old projections; new ones will be generated on view.
+        }
+        // If other parameters like interestRate or startDate change for an interest-only loan,
+        // their existing installments (if any were stored, though typically not for this type) might also need clearing.
+        // For now, only loanAmount change clears installments.
       }
+
       loans[index] = updatedLoan;
       this.saveLoansToStorage(loans);
       return true;
