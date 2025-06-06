@@ -31,12 +31,18 @@ export class InterestOnlyLoanFormComponent implements OnInit {
   }
 
   initForm(): void {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = ('0' + (today.getMonth() + 1)).slice(-2); // Months are 0-indexed
+    const day = ('0' + today.getDate()).slice(-2);
+    const formattedDate = `${year}-${month}-${day}`;
+
     this.loanForm = this.fb.group({
       clientId: ['', Validators.required],
       loanAmount: ['', [Validators.required, Validators.min(1)]],
       monthlyInterestRate: ['', [Validators.required, Validators.min(0.01), Validators.max(50)]], // User enters e.g. 2 for 2% monthly
       termMonths: ['', [Validators.required, Validators.min(1)]], // For initial schedule generation
-      startDate: ['', Validators.required],
+      startDate: [formattedDate, Validators.required], // Set default value
       purpose: [''] // Optional
     });
   }

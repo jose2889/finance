@@ -37,12 +37,18 @@ export class LoanFormComponent implements OnInit {
   }
 
   initForm(): void {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = ('0' + (today.getMonth() + 1)).slice(-2); // Months are 0-indexed
+    const day = ('0' + today.getDate()).slice(-2);
+    const formattedDate = `${year}-${month}-${day}`;
+
     this.loanForm = this.fb.group({
       clientId: ['', Validators.required],
       loanAmount: ['', [Validators.required, Validators.min(1)]],
       interestRate: ['', [Validators.required, Validators.min(0), Validators.max(500)]], // User inputs percentage e.g. 5 for 5%
       termMonths: ['', [Validators.required, Validators.min(1)]],
-      startDate: ['', Validators.required],
+      startDate: [formattedDate, Validators.required], // Set default value
       purpose: ['']
     });
   }

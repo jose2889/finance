@@ -298,11 +298,11 @@ export class LoanService {
     const loanToDelete = loans.find(loan => loan.id === loanId);
 
     if (!loanToDelete) {
-      return { success: false, message: 'Loan not found.' };
+      return { success: false, message: 'Préstamo no encontrado.' };
     }
 
     if (loanToDelete.loanType !== LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
-      return { success: false, message: 'This method can only delete interest-only loans.' };
+      return { success: false, message: 'Este método solo puede eliminar préstamos de interés simple.' };
     }
 
     // Payment check is skipped for this subtask to avoid circular dependency.
@@ -312,10 +312,10 @@ export class LoanService {
 
     if (updatedLoans.length < loans.length) {
       this.saveLoansToStorage(updatedLoans);
-      return { success: true, message: 'Interest-only loan deleted successfully.' };
+      return { success: true, message: 'Préstamo de interés simple eliminado exitosamente.' };
     } else {
       // This case should ideally not be reached if find succeeded.
-      return { success: false, message: 'Loan not found or already deleted during filter operation.' };
+      return { success: false, message: 'Préstamo no encontrado o ya eliminado durante la operación de filtrado.' };
     }
   }
 }

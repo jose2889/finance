@@ -3,7 +3,7 @@
   <form [formGroup]="loanForm" (ngSubmit)="onSubmit()">
     <div>
       <label for="clientId">Cliente:</label>
-      <select id="clientId" formControlName="clientId" class="form-control">
+      <select id="clientId" formControlName="clientId">
         <option value="" disabled>Seleccione un cliente</option>
         <option *ngFor="let client of clients" [value]="client.id">
           {{ client.firstName }} {{ client.lastName }}
@@ -15,7 +15,7 @@
     </div>
     <div>
       <label for="loanAmount">Monto del Préstamo:</label>
-      <input id="loanAmount" type="number" formControlName="loanAmount" class="form-control">
+      <input id="loanAmount" type="number" formControlName="loanAmount">
       <div *ngIf="formControls['loanAmount'].touched && formControls['loanAmount'].invalid">
         <small *ngIf="formControls['loanAmount'].errors?.['required']">El monto es obligatorio.</small>
         <small *ngIf="formControls['loanAmount'].errors?.['min']">El monto debe ser positivo.</small>
@@ -23,7 +23,7 @@
     </div>
     <div>
       <label for="interestRate">Tasa de Interés Anual (ej: 5 para 5%):</label>
-      <input id="interestRate" type="number" step="0.1" formControlName="interestRate" class="form-control">
+      <input id="interestRate" type="number" step="0.1" formControlName="interestRate">
        <div *ngIf="formControls['interestRate'].touched && formControls['interestRate'].invalid">
         <small *ngIf="formControls['interestRate'].errors?.['required']">La tasa es obligatoria.</small>
         <small *ngIf="formControls['interestRate'].errors?.['min']">La tasa no puede ser negativa.</small>
@@ -32,7 +32,7 @@
     </div>
     <div>
       <label for="termMonths">Plazo (Meses):</label>
-      <input id="termMonths" type="number" formControlName="termMonths" class="form-control">
+      <input id="termMonths" type="number" formControlName="termMonths">
        <div *ngIf="formControls['termMonths'].touched && formControls['termMonths'].invalid">
         <small *ngIf="formControls['termMonths'].errors?.['required']">El plazo es obligatorio.</small>
         <small *ngIf="formControls['termMonths'].errors?.['min']">El plazo debe ser de al menos 1 mes.</small>
@@ -40,14 +40,14 @@
     </div>
     <div>
       <label for="startDate">Fecha de Inicio:</label>
-      <input id="startDate" type="date" formControlName="startDate" class="form-control">
+      <input id="startDate" type="date" formControlName="startDate">
       <div *ngIf="formControls['startDate'].touched && formControls['startDate'].errors?.['required']">
         <small>La fecha de inicio es obligatoria.</small>
       </div>
     </div>
     <div>
       <label for="purpose">Propósito (Opcional):</label>
-      <input id="purpose" type="text" formControlName="purpose" class="form-control">
+      <input id="purpose" formControlName="purpose">
     </div>
     <div class="form-actions">
       <button type="submit" class="button button-primary" [disabled]="loanForm.invalid">Guardar Préstamo</button>

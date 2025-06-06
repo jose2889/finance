@@ -100,7 +100,7 @@ export class InterestOnlyLoanListComponent implements OnInit {
         if (deleteOpResult.success) {
           Swal.fire(
             '¡Eliminado!',
-            deleteOpResult.message || 'El préstamo ha sido eliminado.',
+            deleteOpResult.message || 'El préstamo ha sido eliminado exitosamente.', // Ensure Spanish default
             'success' // 'success' icon
           );
           this.loadInterestOnlyLoans(); // Refresh the list
