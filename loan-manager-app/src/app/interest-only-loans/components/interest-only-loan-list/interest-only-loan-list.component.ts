@@ -6,6 +6,8 @@ import { LoanService } from '../../../services/loan.service';
 import { ClientService } from '../../../services/client.service';
 import { PaymentService } from '../../../services/payment.service'; // Added PaymentService
 import { Loan, Client, LoanType } from '../../../models';
+import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2'; // Added SweetAlert2Module
+import Swal from 'sweetalert2'; // Import Swal
 
 export interface InterestOnlyLoanDisplay extends Loan {
   clientName?: string;
@@ -14,7 +16,7 @@ export interface InterestOnlyLoanDisplay extends Loan {
 @Component({
   selector: 'app-interest-only-loan-list',
   standalone: true,
-  imports: [CommonModule, RouterModule], // DatePipe for formatting in template if needed, or use component methods
+  imports: [CommonModule, RouterModule, SweetAlert2Module], // Added SweetAlert2Module
   templateUrl: './interest-only-loan-list.component.html',
   styleUrls: ['./interest-only-loan-list.component.scss']
 })
@@ -71,29 +73,55 @@ export class InterestOnlyLoanListComponent implements OnInit {
   }
 
   public confirmDeleteLoan(loanId: string): void {
-    const confirmation = confirm("Are you sure you want to delete this loan? This action cannot be undone.");
-    if (confirmation) {
-      // Check for existing payments before attempting deletion
-      const payments = this.paymentService.getPaymentsForLoan(loanId);
-      if (payments && payments.length > 0) {
-        alert('This loan has associated payments and cannot be deleted.');
-        console.warn(`Deletion blocked for loan ID: ${loanId} due to existing payments.`);
-        return; // Stop the deletion process
-      }
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¡No podrás revertir esto!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6', // Or your app's primary color
+      cancelButtonColor: '#d33',    // Or your app's danger/secondary color
+      confirmButtonText: 'Sí, ¡eliminar!',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // User confirmed. Proceed with payment check and deletion logic.
+        const payments = this.paymentService.getPaymentsForLoan(loanId);
+        if (payments && payments.length > 0) {
+          Swal.fire(
+            'Bloqueado',
+            'Este préstamo tiene pagos asociados y no puede ser eliminado.',
+            'error' // 'error' icon
+          );
+          console.warn(`Deletion blocked for loan ID: ${loanId} due to existing payments.`);
+          return; // Exit if payments exist
+        }
 
-      // Proceed with deletion if no payments exist
-      const result = this.loanService.deleteInterestOnlyLoan(loanId);
-      if (result.success) {
-        console.log(result.message);
-        alert(result.message || 'Loan deleted successfully.'); // User feedback
-        this.loadInterestOnlyLoans(); // Refresh the list
-      } else {
-        console.error(result.message);
-        alert(result.message || 'Failed to delete loan.'); // User feedback
+        const deleteOpResult = this.loanService.deleteInterestOnlyLoan(loanId);
+        if (deleteOpResult.success) {
+          Swal.fire(
+            '¡Eliminado!',
+            deleteOpResult.message || 'El préstamo ha sido eliminado.',
+            'success' // 'success' icon
+          );
+          this.loadInterestOnlyLoans(); // Refresh the list
+        } else {
+          Swal.fire(
+            'Error',
+            deleteOpResult.message || 'No se pudo eliminar el préstamo.',
+            'error' // 'error' icon
+          );
+          console.error(deleteOpResult.message);
+        }
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        // User cancelled
+        Swal.fire(
+          'Cancelado',
+          'La eliminación del préstamo ha sido cancelada.',
+          'info' // 'info' icon
+        );
+        console.log('User cancelled deletion.');
       }
-    } else {
-      console.log('User cancelled deletion.');
-    }
+    });
   }
 
   formatCurrency(amount: number): string {
