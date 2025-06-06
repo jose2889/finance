@@ -40,7 +40,7 @@ export class LoanFormComponent implements OnInit {
     this.loanForm = this.fb.group({
       clientId: ['', Validators.required],
       loanAmount: ['', [Validators.required, Validators.min(1)]],
-      interestRate: ['', [Validators.required, Validators.min(0), Validators.max(1)]], // Rate as decimal, e.g., 0.05 for 5%
+      interestRate: ['', [Validators.required, Validators.min(0), Validators.max(500)]], // User inputs percentage e.g. 5 for 5%
       termMonths: ['', [Validators.required, Validators.min(1)]],
       startDate: ['', Validators.required],
       purpose: ['']
@@ -61,7 +61,8 @@ export class LoanFormComponent implements OnInit {
     const dataToSave = {
        ...loanData,
        startDate: new Date(loanData.startDate), // Convert string date from input to Date obj
-       interestRate: parseFloat(loanData.interestRate) // Ensure it's a number
+       // Convert interest rate from percentage (e.g., 5) to decimal (e.g., 0.05)
+       interestRate: parseFloat(loanData.interestRate) / 100
     };
 
 
