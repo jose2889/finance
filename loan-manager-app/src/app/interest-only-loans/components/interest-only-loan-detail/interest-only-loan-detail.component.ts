@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 
 import { LoanService } from '../../../services/loan.service';
@@ -17,8 +17,7 @@ import { TranslateInstallmentStatusPipe } from '../../../pipes/translate-install
     CommonModule,
     RouterModule,
     PaymentListComponent,       // Standalone component
-    TranslateInstallmentStatusPipe, // Standalone pipe
-    DatePipe                  // Pipe for formatting dates in template if needed directly
+    TranslateInstallmentStatusPipe // Standalone pipe
   ],
   templateUrl: './interest-only-loan-detail.component.html',
   styleUrls: ['./interest-only-loan-detail.component.scss']
@@ -102,6 +101,12 @@ export class InterestOnlyLoanDetailComponent implements OnInit {
   formatCurrency(amount: number | undefined | null): string {
     if (amount === null || amount === undefined) return 'N/A';
     return amount.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  formatDate(date: Date | string | undefined): string {
+    if (!date) return 'N/A';
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
   formatInterestRate(rate: number | undefined): string {

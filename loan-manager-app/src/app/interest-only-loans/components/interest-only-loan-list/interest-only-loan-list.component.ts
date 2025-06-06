@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common'; // DatePipe for formatting
+import { CommonModule } from '@angular/common'; // DatePipe for formatting
 import { RouterModule, Router } from '@angular/router';
 
 import { LoanService } from '../../../services/loan.service';
@@ -13,7 +13,7 @@ export interface InterestOnlyLoanDisplay extends Loan {
 @Component({
   selector: 'app-interest-only-loan-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, DatePipe], // DatePipe for formatting in template if needed, or use component methods
+  imports: [CommonModule, RouterModule], // DatePipe for formatting in template if needed, or use component methods
   templateUrl: './interest-only-loan-list.component.html',
   styleUrls: ['./interest-only-loan-list.component.scss']
 })
@@ -65,6 +65,13 @@ export class InterestOnlyLoanListComponent implements OnInit {
   formatCurrency(amount: number): string {
     if (amount === null || amount === undefined) return '';
     return amount.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  formatDate(date: Date | string | undefined): string {
+    if (!date) return 'N/A';
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    // Basic date format, can be customized further e.g. using DatePipe or toLocaleDateString options
+    return dateObj.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
   formatInterestRate(rate: number): string {
