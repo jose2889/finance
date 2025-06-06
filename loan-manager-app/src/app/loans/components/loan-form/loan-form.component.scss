@@ -1,5 +1,5 @@
 // SCSS for loan-form.component.scss
-@import '../../../../styles.scss'; // To access global variables if needed directly
+@use '../../../../styles.scss'; // To access global variables if needed directly
 
 :host {
   display: block;

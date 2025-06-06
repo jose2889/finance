@@ -178,7 +178,7 @@ export class PaymentService {
         inst.paidAmount = amountAlreadyPaid + amountToApplyToThisInstallment;
         loanUpdated = true;
 
-        appliedToInstallments.push({
+        appliedToInstallmentsForPaymentRecord.push({
           installmentNumber: inst.installmentNumber,
           amountApplied: amountToApplyToThisInstallment
         });

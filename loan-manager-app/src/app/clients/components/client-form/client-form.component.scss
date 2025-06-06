@@ -1,5 +1,5 @@
 // SCSS for client-form.component.scss
-@import '../../../../styles.scss'; // To access global variables if needed directly (e.g., for mixins, though not used here)
+@use '../../../../styles.scss'; // To access global variables if needed directly (e.g., for mixins, though not used here)
 // However, direct variable access might not work without further SCSS setup.
 // Rely on global styles being applied for variables used in this sheet.
 

@@ -1,5 +1,5 @@
 // SCSS for dashboard-view.component.scss
-@import '../../../../styles.scss'; // To access global variables
+@use '../../../../styles.scss'; // To access global variables
 
 :host {
   display: block;
