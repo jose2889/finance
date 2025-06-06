@@ -80,13 +80,11 @@ export class PaymentService {
       const amountActuallyDueForInstallment = inst.amount - amountAlreadyPaid;
 
       if (amountActuallyDueForInstallment <= 0) {
-        // This installment is already covered (possibly by a previous portion of this same payment if logic was different)
-        // or was fully paid before but status not updated (data integrity issue).
-        // For safety, if it's fully covered, ensure status is Paid.
-        if (inst.status !== InstallmentStatus.Paid && amountAlreadyPaid >= inst.amount) {
-            inst.status = InstallmentStatus.Paid;
-            loanUpdated = true;
-        }
+        // This installment is already effectively paid off or was mis-statused.
+        // We know inst.status was not 'Paid' when the loop iteration began (due to the check at loop start).
+        // So, if it's now determined to be fully covered by its paidAmount, update status.
+        inst.status = InstallmentStatus.Paid;
+        loanUpdated = true; // Status is changing from non-Paid to Paid.
         continue;
       }
 
@@ -103,12 +101,12 @@ export class PaymentService {
 
         console.log(`[PaymentService] Applied ${amountToApplyToThisInstallment} to inst #${inst.installmentNumber}. New paidAmount: ${inst.paidAmount}`);
 
-        if (inst.paidAmount >= inst.amount) { // Check if it's fully paid (or overpaid)
-          if (inst.status !== InstallmentStatus.Paid) {
-            inst.status = InstallmentStatus.Paid;
-            console.log(`[PaymentService] Installment ${inst.installmentNumber} for loan ${loanId} marked as Paid.`);
-            // loanUpdated is already true
-          }
+        if (inst.paidAmount >= inst.amount) {
+          // The installment is now fully paid (or overpaid by this payment).
+          // We know inst.status was not 'Paid' when the loop iteration began.
+          inst.status = InstallmentStatus.Paid;
+          // loanUpdated is already true because inst.paidAmount was just changed.
+          console.log(`[PaymentService] Installment ${inst.installmentNumber} for loan ${loanId} marked as Paid.`);
         }
         // Note: Overdue status would need to be checked/updated based on paymentDate vs dueDate
         // if an overdue installment becomes partially or fully paid.
