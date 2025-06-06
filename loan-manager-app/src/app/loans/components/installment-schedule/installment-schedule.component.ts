@@ -13,7 +13,7 @@ import { TranslateInstallmentStatusPipe } from '../../../pipes/translate-install
   standalone: true,
   imports: [CommonModule, RouterModule, PaymentListComponent, TranslateInstallmentStatusPipe], // Add the new pipe to imports
   templateUrl: './installment-schedule.component.html',
-  styleUrls: ['./installment-schedule.component.css']
+  styleUrls: ['./installment-schedule.component.scss']
 })
 export class InstallmentScheduleComponent implements OnInit {
   loan: Loan | undefined;

@@ -18,7 +18,7 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule, BaseChartDirective, FormsModule], // Add FormsModule
   templateUrl: './dashboard-view.component.html',
-  styleUrls: ['./dashboard-view.component.css']
+  styleUrls: ['./dashboard-view.component.scss']
 })
 export class DashboardViewComponent implements OnInit {
   // General Metrics
@@ -94,21 +94,19 @@ export class DashboardViewComponent implements OnInit {
   }
 
   loadMetrics(): void {
-    console.log('[DashboardView] Loading metrics...');
-    const clients = this.clientService.getClients();
-    console.log('[DashboardView] Total clients:', clients.length);
-    
+    const clients = this.clientService.getClients(); // Unfiltered for now
+    console.log('[DashboardView] Fetched Clients:', clients);
     const loans = this.loanService.getLoans(this.filterStartDate, this.filterEndDate);
-    console.log('[DashboardView] Total loans:', loans.length);
-    console.log('[DashboardView] Loans:', loans);
+    console.log('[DashboardView] Filter Dates:', { start: this.filterStartDate, end: this.filterEndDate });
+    console.log('[DashboardView] Fetched Loans (filtered):', loans);
 
-    this.totalClients = clients.length;
+    this.totalClients = clients.length; // Remains based on all clients, not date filtered
     this.totalLoans = loans.length;
     this.totalLoanedAmount = loans.reduce((sum, loan) => sum + loan.loanAmount, 0);
-    console.log('[DashboardView] Total loaned amount:', this.totalLoanedAmount);
-    
-    this.totalPaymentsReceived = this.paymentService.getTotalPaymentsReceived(this.filterStartDate, this.filterEndDate);
-    console.log('[DashboardView] Total payments received:', this.totalPaymentsReceived);
+
+    const rawTotalPayments = this.paymentService.getTotalPaymentsReceived(this.filterStartDate, this.filterEndDate);
+    console.log('[DashboardView] Raw Total Payments Received (filtered):', rawTotalPayments);
+    this.totalPaymentsReceived = rawTotalPayments;
   }
 
   prepareBarChartData(): void {

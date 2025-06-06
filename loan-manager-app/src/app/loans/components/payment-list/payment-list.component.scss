@@ -1,0 +1,37 @@
+.payment-list-container {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: #f9f9f9; // var(--light-bg-alt) or similar if defined in :root
+  border-radius: 5px;
+  border: 1px solid #e0e0e0; // var(--border-color-alt) or similar if defined
+}
+h4 {
+  margin-bottom: 15px;
+  border-bottom: 1px solid #eee; // var(--border-color) or similar
+  padding-bottom: 10px;
+  font-weight: 600; // Make title a bit bolder
+}
+.table-sm { // For a more compact table
+    font-size: 0.9em;
+    th, td {
+        padding: 0.4rem 0.5rem;
+        vertical-align: middle; // Better vertical alignment for cells
+    }
+}
+.list-unstyled {
+    padding-left: 0;
+    list-style: none;
+    margin-bottom: 0; // Remove default margin from ul
+    li {
+        font-size: 0.95em; // Slightly smaller font for list items if needed
+        padding: 2px 0;   // Small padding for list items
+    }
+}
+
+// General alert styling is expected to come from styles.scss
+// .alert {}
+// .alert-danger {}
+
+.text-center { // Utility class if not globally available
+    text-align: center;
+}

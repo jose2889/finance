@@ -20,7 +20,7 @@ import { TranslateInstallmentStatusPipe } from '../../../pipes/translate-install
     TranslateInstallmentStatusPipe // Standalone pipe
   ],
   templateUrl: './interest-only-loan-detail.component.html',
-  styleUrls: ['./interest-only-loan-detail.component.css']
+  styleUrls: ['./interest-only-loan-detail.component.scss']
 })
 export class InterestOnlyLoanDetailComponent implements OnInit {
   loan: Loan | undefined;

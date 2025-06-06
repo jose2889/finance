@@ -12,7 +12,7 @@ import { Client, LoanType } from '../../../models';
   standalone: true, // Making it a standalone component
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './interest-only-loan-form.component.html',
-  styleUrls: ['./interest-only-loan-form.component.css']
+  styleUrls: ['./interest-only-loan-form.component.scss']
 })
 export class InterestOnlyLoanFormComponent implements OnInit {
   loanForm!: FormGroup;

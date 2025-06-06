@@ -6,7 +6,7 @@ import { RouterModule, RouterOutlet } from '@angular/router'; // Ensure RouterMo
   standalone: true, // Add this
   imports: [RouterOutlet, RouterModule], // Add RouterModule
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.scss'
 })
 export class AppComponent {
   title = 'loan-manager-app';

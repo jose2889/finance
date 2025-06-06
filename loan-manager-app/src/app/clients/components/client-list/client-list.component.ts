@@ -11,7 +11,7 @@ import { RouterModule } from '@angular/router'; // Import RouterModule
   standalone: true, // Add standalone: true
   imports: [CommonModule, RouterModule], // Add necessary imports
   templateUrl: './client-list.component.html',
-  styleUrls: ['./client-list.component.css']
+  styleUrls: ['./client-list.component.scss']
 })
 export class ClientListComponent implements OnInit {
   clients: Client[] = [];

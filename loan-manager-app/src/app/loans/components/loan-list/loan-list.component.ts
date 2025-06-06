@@ -15,7 +15,7 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './loan-list.component.html',
-  styleUrls: ['./loan-list.component.css']
+  styleUrls: ['./loan-list.component.scss']
 })
 export class LoanListComponent implements OnInit {
   loans: LoanDisplay[] = [];

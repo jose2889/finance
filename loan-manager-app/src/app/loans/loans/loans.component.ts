@@ -8,7 +8,7 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './loans.component.html',
-  styleUrl: './loans.component.css'
+  styleUrl: './loans.component.scss'
 })
 export class LoansComponent {
 

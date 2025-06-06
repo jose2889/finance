@@ -14,7 +14,7 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './loan-form.component.html',
-  styleUrls: ['./loan-form.component.css']
+  styleUrls: ['./loan-form.component.scss']
 })
 export class LoanFormComponent implements OnInit {
   loanForm!: FormGroup;

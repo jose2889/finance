@@ -68,6 +68,9 @@ export class LoanService {
     console.log('[LoanService] Data supposedly saved by LocalStorageService.');
   }
 
+  // PaymentService is NOT injected here to avoid circular dependency for now.
+  // The payment check logic will be handled externally or in a future refactor.
+
   getLoans(startDate?: Date, endDate?: Date): Loan[] {
     let loans = this.getLoansFromStorage();
 
@@ -288,5 +291,31 @@ export class LoanService {
     loans.push(newLoan);
     this.saveLoansToStorage(loans);
     return newLoan;
+  }
+
+  public deleteInterestOnlyLoan(loanId: string): { success: boolean; message?: string } {
+    const loans = this.getLoansFromStorage();
+    const loanToDelete = loans.find(loan => loan.id === loanId);
+
+    if (!loanToDelete) {
+      return { success: false, message: 'Loan not found.' };
+    }
+
+    if (loanToDelete.loanType !== LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
+      return { success: false, message: 'This method can only delete interest-only loans.' };
+    }
+
+    // Payment check is skipped for this subtask to avoid circular dependency.
+    // This will be addressed later.
+
+    const updatedLoans = loans.filter(loan => loan.id !== loanId);
+
+    if (updatedLoans.length < loans.length) {
+      this.saveLoansToStorage(updatedLoans);
+      return { success: true, message: 'Interest-only loan deleted successfully.' };
+    } else {
+      // This case should ideally not be reached if find succeeded.
+      return { success: false, message: 'Loan not found or already deleted during filter operation.' };
+    }
   }
 }

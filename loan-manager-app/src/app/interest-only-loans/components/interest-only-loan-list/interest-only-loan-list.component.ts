@@ -4,6 +4,7 @@ import { RouterModule, Router } from '@angular/router';
 
 import { LoanService } from '../../../services/loan.service';
 import { ClientService } from '../../../services/client.service';
+import { PaymentService } from '../../../services/payment.service'; // Added PaymentService
 import { Loan, Client, LoanType } from '../../../models';
 
 export interface InterestOnlyLoanDisplay extends Loan {
@@ -15,7 +16,7 @@ export interface InterestOnlyLoanDisplay extends Loan {
   standalone: true,
   imports: [CommonModule, RouterModule], // DatePipe for formatting in template if needed, or use component methods
   templateUrl: './interest-only-loan-list.component.html',
-  styleUrls: ['./interest-only-loan-list.component.css']
+  styleUrls: ['./interest-only-loan-list.component.scss']
 })
 export class InterestOnlyLoanListComponent implements OnInit {
   interestOnlyLoans: InterestOnlyLoanDisplay[] = [];
@@ -23,6 +24,7 @@ export class InterestOnlyLoanListComponent implements OnInit {
   constructor(
     private loanService: LoanService,
     private clientService: ClientService,
+    private paymentService: PaymentService, // Injected PaymentService
     private router: Router
   ) { }
 
@@ -60,6 +62,32 @@ export class InterestOnlyLoanListComponent implements OnInit {
     // Or, could navigate to a generic loan detail component that handles different loan types.
     // As a quick solution if the existing schedule view is suitable:
     // this.router.navigate(['/loans', loanId, 'installments']);
+  }
+
+  public confirmDeleteLoan(loanId: string): void {
+    const confirmation = confirm("Are you sure you want to delete this loan? This action cannot be undone.");
+    if (confirmation) {
+      // Check for existing payments before attempting deletion
+      const payments = this.paymentService.getPaymentsForLoan(loanId);
+      if (payments && payments.length > 0) {
+        alert('This loan has associated payments and cannot be deleted.');
+        console.warn(`Deletion blocked for loan ID: ${loanId} due to existing payments.`);
+        return; // Stop the deletion process
+      }
+
+      // Proceed with deletion if no payments exist
+      const result = this.loanService.deleteInterestOnlyLoan(loanId);
+      if (result.success) {
+        console.log(result.message);
+        alert(result.message || 'Loan deleted successfully.'); // User feedback
+        this.loadInterestOnlyLoans(); // Refresh the list
+      } else {
+        console.error(result.message);
+        alert(result.message || 'Failed to delete loan.'); // User feedback
+      }
+    } else {
+      console.log('User cancelled deletion.');
+    }
   }
 
   formatCurrency(amount: number): string {

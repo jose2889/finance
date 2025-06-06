@@ -1,0 +1,202 @@
+// Font import removed, will be added to index.html
+
+:root {
+  --primary-color: #007bff; // Vibrant Blue
+  --secondary-color: #6c757d; // Grey
+  --accent-color: #17a2b8;   // Teal
+  --success-color: #28a745; // Green
+  --danger-color: #dc3545;  // Red
+  --warning-color: #ffc107; // Yellow
+  --light-bg: #f8f9fa;
+  --dark-text: #343a40;
+  --light-text: #f8f9fa;
+  --border-color: #dee2e6;
+  --gradient-start: var(--primary-color);
+  --gradient-end: #0056b3; // Darker blue for gradient
+
+  // Darkened shades for hover effects
+  --primary-color-dark: #0056b3;
+  --secondary-color-dark: #545b62;
+  --success-color-dark: #1e7e34;
+  --danger-color-dark: #c82333;
+  --accent-color-dark: #117a8b; // Added for dashboard metric card hover
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  background-color: var(--light-bg);
+  color: var(--dark-text);
+  line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+  color: var(--primary-color);
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.container { // General container, can be used by components
+  padding: 20px;
+  max-width: 1200px;
+  margin: 20px auto; // Added some top/bottom margin for general containers
+}
+
+button, .button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  font-family: 'Montserrat', sans-serif;
+  transition: background-color 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease; // Added box-shadow transition
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05); // Subtle shadow for buttons
+
+  &:hover {
+    opacity: 0.9;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); // Enhanced shadow on hover
+  }
+  &:active {
+   transform: scale(0.98);
+   box-shadow: 0 1px 2px rgba(0,0,0,0.05); // Smaller shadow when active
+  }
+  &:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+    box-shadow: none;
+  }
+}
+
+.button-primary {
+  background-color: var(--primary-color);
+  color: var(--light-text);
+  &:hover { background-color: var(--primary-color-dark); }
+}
+
+.button-secondary {
+  background-color: var(--secondary-color);
+  color: var(--light-text);
+  &:hover { background-color: var(--secondary-color-dark); }
+}
+
+.button-danger {
+  background-color: var(--danger-color);
+  color: var(--light-text);
+  &:hover { background-color: var(--danger-color-dark); }
+}
+
+.button-success { // Generic success button
+  background-color: var(--success-color);
+  color: var(--light-text);
+  &:hover { background-color: var(--success-color-dark); }
+}
+
+.button-small { // For smaller buttons in lists/actions
+  padding: 5px 10px;
+  font-size: 0.8em;
+}
+
+// Specific button styles that can be applied via class
+.add-button {
+   @extend .button; // Inherit base button styles
+   background-color: var(--success-color);
+   color: var(--light-text);
+   margin-bottom: 15px;
+   &:hover { background-color: var(--success-color-dark); }
+}
+
+.delete-button {
+   @extend .button; // Inherit base button styles
+   background-color: var(--danger-color); // Already uses danger color
+   color: var(--light-text);
+   // No need for specific hover if it's same as .button-danger hover
+   // If different hover is needed for delete-button specifically:
+   // &:hover { background-color: var(--danger-color-very-dark); }
+}
+
+// General table styling (can be refined in specific components)
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  th, td {
+    border: 1px solid var(--border-color);
+    padding: 10px 14px;
+    text-align: left;
+  }
+  th {
+    background-color: var(--light-bg); // Lighter header for general tables
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+  }
+  tr:nth-child(even) {
+    background-color: #fdfdfd; // Very subtle striping
+  }
+  tr:hover {
+    background-color: #eef4f8; // Light blue hover
+  }
+}
+
+// Form elements global styling (can be refined in components)
+input[type="text"],
+input[type="email"],
+input[type="tel"], // Add this
+input[type="number"],
+input[type="date"],
+textarea,
+select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+  font-size: 1em;
+
+  // ===== ADDED/MODIFIED PROPERTIES =====
+  line-height: 1.4;
+  color: var(--dark-text);
+  background-color: #fff;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  // =====================================
+
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  &:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25); // Replaced var with actual RGB
+  }
+}
+select {
+  appearance: none; // Basic reset for select
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007bff%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat;
+  background-position: right .7em top 50%, 0 0;
+  background-size: .65em auto, 100%;
+}
+
+textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+// Utility classes
+.text-center { text-align: center; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
