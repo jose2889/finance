@@ -8,7 +8,7 @@ import { RouterModule } from '@angular/router'; // Import RouterModule
   standalone: true, // Add standalone: true
   imports: [CommonModule, RouterModule], // Add necessary imports
   templateUrl: './clients.component.html',
-  styleUrl: './clients.component.scss'
+  styleUrl: './clients.component.css'
 })
 export class ClientsComponent {
 

@@ -18,7 +18,7 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [CommonModule, RouterModule, BaseChartDirective, FormsModule], // Add FormsModule
   templateUrl: './dashboard-view.component.html',
-  styleUrls: ['./dashboard-view.component.scss']
+  styleUrls: ['./dashboard-view.component.css']
 })
 export class DashboardViewComponent implements OnInit {
   // General Metrics
@@ -94,13 +94,21 @@ export class DashboardViewComponent implements OnInit {
   }
 
   loadMetrics(): void {
-    const clients = this.clientService.getClients(); // Unfiltered for now
+    console.log('[DashboardView] Loading metrics...');
+    const clients = this.clientService.getClients();
+    console.log('[DashboardView] Total clients:', clients.length);
+    
     const loans = this.loanService.getLoans(this.filterStartDate, this.filterEndDate);
+    console.log('[DashboardView] Total loans:', loans.length);
+    console.log('[DashboardView] Loans:', loans);
 
-    this.totalClients = clients.length; // Remains based on all clients, not date filtered
+    this.totalClients = clients.length;
     this.totalLoans = loans.length;
     this.totalLoanedAmount = loans.reduce((sum, loan) => sum + loan.loanAmount, 0);
+    console.log('[DashboardView] Total loaned amount:', this.totalLoanedAmount);
+    
     this.totalPaymentsReceived = this.paymentService.getTotalPaymentsReceived(this.filterStartDate, this.filterEndDate);
+    console.log('[DashboardView] Total payments received:', this.totalPaymentsReceived);
   }
 
   prepareBarChartData(): void {

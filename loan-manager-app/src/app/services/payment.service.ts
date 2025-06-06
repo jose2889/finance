@@ -214,31 +214,31 @@ export class PaymentService {
   // public applySurplusToLoan(clientId: string, loanToApplyToId: string): boolean { ... }
 
   public getTotalPaymentsReceived(startDate?: Date, endDate?: Date): number {
-    let payments = this.getPaymentsFromStorage();
-
+    const payments = this.getPaymentsFromStorage();
+    
     if (startDate && endDate) {
-      // Ensure endDate is inclusive by setting time to end of day
       const inclusiveEndDate = new Date(endDate);
-      inclusiveEndDate.setHours(23, 59, 59, 999);
-
-      payments = payments.filter(payment => {
-        const paymentDate = new Date(payment.paymentDate); // Ensure it's a Date object
-        return paymentDate >= startDate && paymentDate <= inclusiveEndDate;
-      });
+      inclusiveEndDate.setHours(23, 59, 59, 999); // Make endDate inclusive
+      
+      return payments
+        .filter(payment => {
+          const paymentDate = new Date(payment.paymentDate);
+          return paymentDate >= startDate && paymentDate <= inclusiveEndDate;
+        })
+        .reduce((total, payment) => total + payment.amountPaid, 0);
     } else if (startDate) {
-      payments = payments.filter(payment => {
-        const paymentDate = new Date(payment.paymentDate);
-        return paymentDate >= startDate;
-      });
+      return payments
+        .filter(payment => new Date(payment.paymentDate) >= startDate)
+        .reduce((total, payment) => total + payment.amountPaid, 0);
     } else if (endDate) {
       const inclusiveEndDate = new Date(endDate);
       inclusiveEndDate.setHours(23, 59, 59, 999);
-      payments = payments.filter(payment => {
-        const paymentDate = new Date(payment.paymentDate);
-        return paymentDate <= inclusiveEndDate;
-      });
+      return payments
+        .filter(payment => new Date(payment.paymentDate) <= inclusiveEndDate)
+        .reduce((total, payment) => total + payment.amountPaid, 0);
     }
-
+    
+    // If no dates provided, return total of all payments
     return payments.reduce((total, payment) => total + payment.amountPaid, 0);
   }
 }

@@ -12,7 +12,7 @@ import { Loan } from '../../../models';
   standalone: true, // Made standalone
   imports: [CommonModule, ReactiveFormsModule, RouterModule], // Added imports
   templateUrl: './payment-form.component.html',
-  styleUrls: ['./payment-form.component.scss']
+  styleUrls: ['./payment-form.component.css']
 })
 export class PaymentFormComponent implements OnInit {
   paymentForm!: FormGroup;

@@ -12,7 +12,7 @@ import { RouterModule } from '@angular/router'; // Import RouterModule
   standalone: true, // Add standalone: true
   imports: [CommonModule, ReactiveFormsModule, RouterModule], // Add necessary imports
   templateUrl: './client-form.component.html',
-  styleUrls: ['./client-form.component.scss']
+  styleUrls: ['./client-form.component.css']
 })
 export class ClientFormComponent implements OnInit {
   clientForm!: FormGroup; // Definite assignment assertion

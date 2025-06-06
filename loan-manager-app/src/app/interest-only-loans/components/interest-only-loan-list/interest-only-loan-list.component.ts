@@ -15,7 +15,7 @@ export interface InterestOnlyLoanDisplay extends Loan {
   standalone: true,
   imports: [CommonModule, RouterModule], // DatePipe for formatting in template if needed, or use component methods
   templateUrl: './interest-only-loan-list.component.html',
-  styleUrls: ['./interest-only-loan-list.component.scss']
+  styleUrls: ['./interest-only-loan-list.component.css']
 })
 export class InterestOnlyLoanListComponent implements OnInit {
   interestOnlyLoans: InterestOnlyLoanDisplay[] = [];

@@ -9,7 +9,7 @@ import { Payment } from '../../../models';
   standalone: true, // Made standalone
   imports: [CommonModule], // Added CommonModule
   templateUrl: './payment-list.component.html',
-  styleUrls: ['./payment-list.component.scss']
+  styleUrls: ['./payment-list.component.css']
 })
 export class PaymentListComponent implements OnInit, OnChanges {
   @Input() loanId: string | null = null;
