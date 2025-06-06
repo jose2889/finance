@@ -36,8 +36,6 @@ export class PaymentFormComponent implements OnInit {
     this.loanId = this.route.snapshot.paramMap.get('loanId');
     if (this.loanId) {
       this.loan = this.loanService.getLoanById(this.loanId);
-      // Note: this.loan.clientName might not be populated here if getLoanById doesn't join it.
-      // The HTML template has a fallback for loan.clientName.
     } else {
       this.errorMessage = 'ID de préstamo no encontrado en la ruta.';
     }
@@ -45,7 +43,6 @@ export class PaymentFormComponent implements OnInit {
     this.paymentForm = this.fb.group({
       paymentAmount: ['', [Validators.required, Validators.min(0.01)]],
       paymentDate: [new Date().toISOString().substring(0, 10), Validators.required],
-      paymentMethod: [''],
       notes: ['']
     });
   }
@@ -65,7 +62,7 @@ export class PaymentFormComponent implements OnInit {
     }
 
     this.isLoading = true;
-    const { paymentAmount, paymentDate, paymentMethod, notes } = this.paymentForm.value;
+    const { paymentAmount, paymentDate, notes } = this.paymentForm.value;
 
     // Ensure paymentAmount is treated as a number
     const numericPaymentAmount = typeof paymentAmount === 'string' ? parseFloat(paymentAmount) : paymentAmount;
@@ -74,15 +71,14 @@ export class PaymentFormComponent implements OnInit {
       this.loanId,
       numericPaymentAmount,
       new Date(paymentDate),
-      paymentMethod,
       notes
     );
 
     this.isLoading = false;
     if (result.success) {
       this.successMessage = `Pago registrado exitosamente con ID: ${result.paymentId}. ${result.message || ''}`;
-      this.paymentForm.reset({ paymentDate: new Date().toISOString().substring(0, 10), paymentAmount: '', paymentMethod: '', notes: '' });
-      // Refresh loan data in case amounts or statuses changed on it (though PaymentService handles this)
+      this.paymentForm.reset({ paymentDate: new Date().toISOString().substring(0, 10), paymentAmount: '', notes: '' });
+      // Refresh loan data in case amounts or statuses changed on it
       if(this.loanId) {
         this.loan = this.loanService.getLoanById(this.loanId);
       }

@@ -16,65 +16,37 @@ interface AmortizedLoanCreationData {
   providedIn: 'root'
 })
 export class LoanService {
-  private readonly storageKey = 'loans';
+  private readonly STORAGE_KEY = 'loans';
 
-  constructor(private localStorageService: LocalStorageService) { }
+  constructor(private storage: LocalStorageService) { }
 
   private getLoansFromStorage(): Loan[] {
-    console.log('[LoanService] getLoansFromStorage called.');
-    // Attempt to get the raw string to see what's actually in localStorage before LocalStorageService parses it.
-    // Note: LocalStorageService.getItem<T> already does JSON.parse.
-    // To get the raw string, we might need a different method in LocalStorageService or use localStorage directly here for logging.
-    // For now, let's assume LocalStorageService.getItem returns the parsed object or null.
-    const loansFromStorage = this.localStorageService.getItem<Loan[]>(this.storageKey) || [];
+    const loans = this.storage.getItem(this.STORAGE_KEY);
+    if (!loans || typeof loans !== 'string') return [];
     
-    // Log what LocalStorageService returned (which should be an array of objects, possibly with string dates)
-    console.log('[LoanService] Data from LocalStorageService (before date parsing):', JSON.parse(JSON.stringify(loansFromStorage)));
+    try {
+      const parsedLoans = JSON.parse(loans) as Loan[];
+      if (!Array.isArray(parsedLoans)) return [];
 
-    if (!loansFromStorage || loansFromStorage.length === 0) {
-      console.log('[LoanService] No loans found in storage or empty array after initial retrieval.');
+      return parsedLoans.map((loan: Loan) => ({
+        ...loan,
+        startDate: new Date(loan.startDate),
+        installments: loan.installments.map((inst: Installment) => ({
+          ...inst,
+          dueDate: new Date(inst.dueDate)
+        }))
+      }));
+    } catch (error) {
+      console.error('Error parsing loans from storage:', error);
       return [];
     }
-    
-    console.log('[LoanService] Mapping over loans to parse dates...');
-    const parsedLoans = loansFromStorage.map((loan, index) => {
-      console.log(`[LoanService] Processing loan index ${index} (ID: ${loan.id}) for date parsing (original from storage):`, JSON.parse(JSON.stringify(loan)));
-      
-      let parsedStartDate = new Date(loan.startDate);
-      if (isNaN(parsedStartDate.getTime())) {
-        console.error(`[LoanService] Loan index ${index} (ID: ${loan.id}) has an invalid startDate string: ${loan.startDate}. Resulted in Invalid Date.`);
-        // parsedStartDate will remain an Invalid Date object
-      }
-
-      const parsedInstallments = loan.installments.map((inst, instIndex) => {
-        let parsedDueDate = new Date(inst.dueDate);
-        if (isNaN(parsedDueDate.getTime())) {
-          console.error(`[LoanService] Loan index ${index} (ID: ${loan.id}), Installment index ${instIndex} (Number: ${inst.installmentNumber}) has an invalid dueDate string: ${inst.dueDate}. Resulted in Invalid Date.`);
-          // parsedDueDate will remain an Invalid Date object
-        }
-        return {
-          ...inst,
-          dueDate: parsedDueDate
-        };
-      });
-
-      const parsedLoan = {
-        ...loan,
-        startDate: parsedStartDate,
-        installments: parsedInstallments
-      };
-      console.log(`[LoanService] Loan index ${index} (ID: ${loan.id}) after date parsing:`, JSON.parse(JSON.stringify(parsedLoan)));
-      return parsedLoan;
-    });
-    console.log('[LoanService] Fully parsed loans:', JSON.parse(JSON.stringify(parsedLoans)));
-    return parsedLoans;
   }
 
   private saveLoansToStorage(loans: Loan[]): void {
     console.log('[LoanService] saveLoansToStorage called.');
     console.log('[LoanService] Saving loans (structure of first loan if exists):', loans.length > 0 ? JSON.parse(JSON.stringify(loans[0])) : 'empty array');
     console.log('[LoanService] Total loans to save:', loans.length);
-    this.localStorageService.setItem(this.storageKey, loans);
+    this.storage.setItem(this.STORAGE_KEY, JSON.stringify(loans));
     console.log('[LoanService] Data supposedly saved by LocalStorageService.');
   }
 
@@ -116,72 +88,64 @@ export class LoanService {
   addLoan(loanData: AmortizedLoanCreationData): Loan {
     const loans = this.getLoansFromStorage();
     const newLoan: Loan = {
-      ...loanData, // Spread properties from AmortizedLoanCreationData
+      ...loanData,
       id: crypto.randomUUID(),
-      loanType: LoanType.AMORTIZED, // Explicitly set for this method
-      startDate: new Date(loanData.startDate), // Ensure startDate is a Date object
-      // termMonths is already part of loanData and is a number
+      loanType: LoanType.AMORTIZED,
+      startDate: new Date(loanData.startDate),
       installments: this.calculateInstallments(
         loanData.loanAmount,
-        loanData.interestRate, // Assuming this is already annual decimal from form processing
-        loanData.termMonths,   // Now correctly a number
+        loanData.interestRate,
+        loanData.termMonths,
         new Date(loanData.startDate)
       )
     };
+
     loans.push(newLoan);
     this.saveLoansToStorage(loans);
     return newLoan;
   }
 
   updateLoan(updatedLoan: Loan): boolean {
-    let loans = this.getLoansFromStorage();
+    const loans = this.getLoansFromStorage();
     const index = loans.findIndex(loan => loan.id === updatedLoan.id);
-    if (index > -1) {
-      // Store the original loan for comparison
-      const originalLoan = loans[index];
-
-      if (updatedLoan.loanType === LoanType.AMORTIZED) {
-        // Original condition for recalculation:
-        if (
-          originalLoan.loanAmount !== updatedLoan.loanAmount ||
-          originalLoan.interestRate !== updatedLoan.interestRate ||
-          (updatedLoan.termMonths !== undefined && originalLoan.termMonths !== updatedLoan.termMonths) || // Check termMonths only if defined
-          new Date(originalLoan.startDate).getTime() !== new Date(updatedLoan.startDate).getTime()
-        ) {
-          // Ensure termMonths is valid for AMORTIZED loan recalculation
-          if (typeof updatedLoan.termMonths !== 'number' || updatedLoan.termMonths <= 0) {
-            console.error('Cannot update amortized loan to have invalid termMonths. Installments not recalculated.');
-            // Optionally, do not save or return an error, or save without recalculating if that's desired.
-            // For now, we'll proceed to save updatedLoan but its installments might be stale if termMonths was invalid.
-          } else {
-            updatedLoan.installments = this.calculateInstallments(
-              updatedLoan.loanAmount,
-              updatedLoan.interestRate,
-              updatedLoan.termMonths, // Now we've checked it's a number (or should be from form)
-              new Date(updatedLoan.startDate)
-            );
-          }
-        }
-      } else if (updatedLoan.loanType === LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
-        // For interest-only loans, principal reduction directly affects future interest calculations.
-        // The existing `getProjectedInterestInstallments` is for VIEWING projections.
-        // If loanAmount (principal) changes, the original `loan.installments` (if it was storing projections)
-        // might need to be cleared or re-evaluated.
-        // For now, if principal changes, we can clear the stored `updatedLoan.installments`
-        // so the detail view will regenerate them with the new principal.
-        if (originalLoan.loanAmount !== updatedLoan.loanAmount) {
-          updatedLoan.installments = []; // Clear old projections; new ones will be generated on view.
-        }
-        // If other parameters like interestRate or startDate change for an interest-only loan,
-        // their existing installments (if any were stored, though typically not for this type) might also need clearing.
-        // For now, only loanAmount change clears installments.
-      }
-
-      loans[index] = updatedLoan;
-      this.saveLoansToStorage(loans);
-      return true;
+    
+    if (index === -1) {
+      return false;
     }
-    return false;
+
+    // Store the original loan for comparison
+    const originalLoan = loans[index];
+
+    if (updatedLoan.loanType === LoanType.AMORTIZED) {
+      // Check if key parameters changed
+      if (
+        originalLoan.loanAmount !== updatedLoan.loanAmount ||
+        originalLoan.interestRate !== updatedLoan.interestRate ||
+        (updatedLoan.termMonths !== undefined && originalLoan.termMonths !== updatedLoan.termMonths) ||
+        new Date(originalLoan.startDate).getTime() !== new Date(updatedLoan.startDate).getTime()
+      ) {
+        // Ensure termMonths is valid for AMORTIZED loan recalculation
+        if (typeof updatedLoan.termMonths === 'number' && updatedLoan.termMonths > 0) {
+          updatedLoan.installments = this.calculateInstallments(
+            updatedLoan.loanAmount,
+            updatedLoan.interestRate,
+            updatedLoan.termMonths,
+            new Date(updatedLoan.startDate)
+          );
+        } else {
+          console.error('Cannot update amortized loan with invalid termMonths');
+          return false;
+        }
+      }
+    } else if (updatedLoan.loanType === LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
+      if (originalLoan.loanAmount !== updatedLoan.loanAmount) {
+        updatedLoan.installments = [];
+      }
+    }
+
+    loans[index] = updatedLoan;
+    this.saveLoansToStorage(loans);
+    return true;
   }
 
   deleteLoan(id: string): boolean {
@@ -229,11 +193,9 @@ export class LoanService {
       remainingBalance -= principalPayment;
 
       // Handle potential floating point inaccuracies for the last payment
-      if (i === termMonths) {
-       if (remainingBalance !== 0 && remainingBalance < 1 && remainingBalance > -1) { // Small discrepancy
-           monthlyPayment += remainingBalance; // Adjust last payment
-           remainingBalance = 0;
-       }
+      if (i === termMonths && remainingBalance !== 0 && Math.abs(remainingBalance) < 1) {
+        monthlyPayment += remainingBalance;
+        remainingBalance = 0;
       }
 
 
