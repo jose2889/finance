@@ -1,1 +1,77 @@
-// SCSS for interest-only-loan-detail.component - Can be populated with styles later.
+// SCSS for installment-schedule.component.scss
+@use '../../../../styles.scss';
+
+:host {
+  display: block;
+}
+
+.page-header {
+  margin-bottom: 20px;
+
+  h2 {
+    margin-bottom: 5px;
+    // color: var(--primary-color); // Global style
+  }
+
+  p {
+    margin-bottom: 5px;
+    color: var(--secondary-color);
+    font-size: 1.1em;
+  }
+
+  strong {
+    color: var(--dark-text);
+  }
+  // The "Back to Loans List" button should be styled using classes in HTML, e.g.:
+  // <button (click)="goBack()" class="button button-secondary mb-3">Back to Loans List</button>
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: #fff;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.07);
+  border-radius: 8px; // Applied to table
+  overflow: hidden;   // To make border-radius work with <th> backgrounds
+
+  th, td {
+    border: 1px solid var(--border-color); // Will be overridden by border-radius on table edges
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  // Remove border from table cells that would conflict with table's border-radius
+  // This is a common technique for rounded tables.
+  th:first-child, td:first-child { border-left: none; }
+  th:last-child, td:last-child { border-right: none; }
+  tr:first-child th { border-top: none; } // if header is part of tbody or separate thead
+  thead tr:first-child th { border-top: none; } // for thead
+  tbody tr:last-child td { border-bottom: none; }
+
+
+  th {
+    background-color: var(--accent-color);
+    color: var(--light-text);
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) {
+    background-color: var(--light-bg);
+  }
+
+  tr:hover {
+    background-color: #e9ecef;
+  }
+
+  select { // Styling for status dropdown
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background-color: #fff;
+    font-family: 'Roboto', sans-serif;
+    // Focus styling will come from global styles.scss
+  }
+}

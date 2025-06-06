@@ -1,1 +1,72 @@
-// SCSS for interest-only-loan-list.component - Can be populated with styles later.
+// SCSS for loan-list.component.scss
+@use '../../../../styles.scss';
+
+:host {
+  display: block;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+
+  li {
+    background-color: #fff;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.07);
+    display: flex;
+    flex-direction: column; // Stack content vertically on small screens
+    gap: 10px; // Consistent gap between items
+
+    @media (min-width: 768px) { // Adjust for larger screens
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .loan-details {
+      display: flex;
+      flex-direction: column; // Stack details
+      gap: 5px; // Space between detail lines
+      flex-grow: 1; // Allow details to take available space
+
+      @media (min-width: 768px) {
+        flex-direction: row; // Details side-by-side on larger screens
+        flex-wrap: wrap; // Allow wrapping if too many details
+        gap: 15px; // Space between detail items
+      }
+
+      span {
+        font-size: 1em; // Adjusted for more info
+        color: var(--dark-text);
+        // Individual spans can be targeted if more specific styling is needed
+      }
+    }
+
+    .loan-actions { // Button container
+      display: flex;
+      gap: 8px;
+      align-self: flex-start; // Align to start of cross axis (left for column, top for row)
+
+      @media (min-width: 768px) {
+        align-self: center; // Center vertically with loan details on larger screens
+      }
+
+      button {
+        padding: 6px 12px;
+        font-size: 0.9em;
+        // Buttons should have classes like .button-secondary, .button-danger from HTML
+      }
+    }
+  }
+}
+
+p { // For "No items found" message
+  text-align: center;
+  font-size: 1.1em;
+  color: var(--secondary-color);
+  margin-top: 20px;
+}
+
+// .add-button is global. Apply via class in HTML.

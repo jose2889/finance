@@ -51,7 +51,7 @@ export class InterestOnlyLoanListComponent implements OnInit {
     this.router.navigate(['/interest-only-loans/new']);
   }
 
-  viewLoanDetails(loanId: string): void {
+  viewInstallments(loanId: string): void { // Renamed from viewLoanDetails
     // Route for interest-only loan details will need to be defined.
     // For now, let's assume a path like '/interest-only-loans/:id/details'
     // Or, it could reuse the existing installment schedule view if that's made generic enough.
@@ -62,6 +62,12 @@ export class InterestOnlyLoanListComponent implements OnInit {
     // Or, could navigate to a generic loan detail component that handles different loan types.
     // As a quick solution if the existing schedule view is suitable:
     // this.router.navigate(['/loans', loanId, 'installments']);
+  }
+
+  navigateToAddPayment(loanId: string): void {
+    this.router.navigate(['/interest-only-loans', loanId, 'add-payment']);
+    // Consider if a specific route/component for interest-only payment is needed,
+    // or if the generic one can handle it.
   }
 
   public confirmDeleteLoan(loanId: string): void {
