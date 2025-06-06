@@ -3,28 +3,28 @@
   <form [formGroup]="clientForm" (ngSubmit)="onSubmit()">
     <div>
       <label for="firstName">Nombres:</label>
-      <input id="firstName" formControlName="firstName">
+      <input id="firstName" formControlName="firstName" class="form-control">
       <div *ngIf="formControls['firstName'].touched && formControls['firstName'].invalid">
         <small *ngIf="formControls['firstName'].errors?.['required']">El nombre es obligatorio.</small>
       </div>
     </div>
     <div>
       <label for="lastName">Apellidos:</label>
-      <input id="lastName" formControlName="lastName">
+      <input id="lastName" formControlName="lastName" class="form-control">
       <div *ngIf="formControls['lastName'].touched && formControls['lastName'].invalid">
         <small *ngIf="formControls['lastName'].errors?.['required']">El apellido es obligatorio.</small>
       </div>
     </div>
     <div>
       <label for="email">Correo Electrónico:</label>
-      <input id="email" type="email" formControlName="email">
+      <input id="email" type="email" formControlName="email" class="form-control">
        <div *ngIf="formControls['email'].touched && formControls['email'].errors?.['email']">
         <small>Formato de correo inválido.</small>
       </div>
     </div>
     <div>
       <label for="phone">Teléfono:</label>
-      <input id="phone" type="tel" formControlName="phone"> // Change type to "tel"
+      <input id="phone" type="tel" formControlName="phone" class="form-control">
     </div>
     <div>
       <label for="address">Dirección:</label>
