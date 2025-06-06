@@ -43,6 +43,32 @@
   }
 }
 
+// Styles for the filter section card
+.filters-section.card {
+  // background-color: #f8f9fa; // Replaced by animated gradient
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0,0,0,.05);
+  margin-bottom: 2rem;
+  padding: 1rem;
+  // New styles for animated gradient:
+  background: linear-gradient(-45deg, #e9ecef, #dee2e6, #ced4da, #adb5bd);
+  background-size: 400% 400%;
+  animation: subtleGradientAnimation 15s ease infinite;
+  color: #343a40; // Ensure text color has good contrast
+}
+
+@keyframes subtleGradientAnimation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 .charts-container {
   display: flex;
   gap: 20px;
