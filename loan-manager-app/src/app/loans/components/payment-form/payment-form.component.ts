@@ -50,40 +50,29 @@ export class PaymentFormComponent implements OnInit {
   get formControls() { return this.paymentForm.controls; }
 
   onSubmit(): void {
-    this.errorMessage = null;
-    this.successMessage = null;
     if (this.paymentForm.invalid) {
       this.paymentForm.markAllAsTouched();
       return;
     }
+
     if (!this.loanId) {
       this.errorMessage = 'Error: ID de préstamo faltante. No se puede registrar el pago.';
       return;
     }
 
-    this.isLoading = true;
-    const { paymentAmount, paymentDate, notes } = this.paymentForm.value;
+    const { amount, paymentDate, notes } = this.paymentForm.value;
+    const numericPaymentAmount = parseFloat(amount);
 
-    // Ensure paymentAmount is treated as a number
-    const numericPaymentAmount = typeof paymentAmount === 'string' ? parseFloat(paymentAmount) : paymentAmount;
-
-    const result = this.paymentService.addPayment(
-      this.loanId,
-      numericPaymentAmount,
-      new Date(paymentDate),
-      notes
-    );
-
-    this.isLoading = false;
-    if (result.success) {
-      this.successMessage = `Pago registrado exitosamente con ID: ${result.paymentId}. ${result.message || ''}`;
-      this.paymentForm.reset({ paymentDate: new Date().toISOString().substring(0, 10), paymentAmount: '', notes: '' });
-      // Refresh loan data in case amounts or statuses changed on it
-      if(this.loanId) {
-        this.loan = this.loanService.getLoanById(this.loanId);
-      }
-    } else {
-      this.errorMessage = `Error al registrar el pago: ${result.message || 'Error desconocido.'}`;
+    try {
+      this.paymentService.addPayment(
+        this.loanId,
+        numericPaymentAmount,
+        new Date(paymentDate),
+        notes
+      );
+      this.router.navigate(['/loans', this.loanId]);
+    } catch (error) {
+      this.errorMessage = `Error al registrar el pago: ${error instanceof Error ? error.message : 'Error desconocido.'}`;
     }
   }
 

@@ -4,29 +4,27 @@
     Agregar Nuevo Préstamo
   </button>
 
-  <ul *ngIf="interestOnlyLoans.length > 0">
-    <li *ngFor="let loan of interestOnlyLoans">
+  <ul *ngIf="loans.length > 0">
+    <li *ngFor="let loan of loans">
       <div class="loan-details">
         <span><strong>Cliente:</strong> {{ loan.clientName }}</span>
         <span><strong>Monto:</strong> {{ formatCurrency(loan.loanAmount) }}</span>
-        <span><strong>Tasa Interés:</strong> {{ formatInterestRate(loan.interestRate) }}</span>
-        <span><strong>Plazo (Meses):</strong> {{ loan.termMonths }}</span>
+        <span><strong>Tasa Interés:</strong> {{ (loan.monthlyInterestRate * 100).toFixed(2) }}%</span>
         <span><strong>Fecha Inicio:</strong> {{ formatDate(loan.startDate) }}</span>
       </div>
       <div class="loan-actions">
-        <button (click)="viewInstallments(loan.id)" class="button button-secondary button-small">
-          Ver Cuotas
+        <button (click)="viewDetails(loan.id)" class="button button-secondary button-small">
+          Ver Detalles
         </button>
-        <button (click)="navigateToAddPayment(loan.id)" class="button button-success button-small">
+        <button (click)="makePayment(loan.id)" class="button button-success button-small">
           Registrar Pago
         </button>
         <button (click)="confirmDeleteLoan(loan.id)" class="delete-button button-small">
           Eliminar
         </button>
-        <!-- Add other actions like Edit/Delete later if needed -->
       </div>
     </li>
   </ul>
 
-  <p class="no-items" *ngIf="interestOnlyLoans.length === 0">No se encontraron préstamos de interés simple. ¡Agrega uno!</p>
+  <p class="no-items" *ngIf="loans.length === 0">No se encontraron préstamos de interés simple. ¡Agrega uno!</p>
 </div>

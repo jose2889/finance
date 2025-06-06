@@ -9,14 +9,19 @@ import { Client, LoanType } from '../../../models';
 
 @Component({
   selector: 'app-interest-only-loan-form',
-  standalone: true, // Making it a standalone component
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule
+  ],
   templateUrl: './interest-only-loan-form.component.html',
   styleUrls: ['./interest-only-loan-form.component.scss']
 })
 export class InterestOnlyLoanFormComponent implements OnInit {
   loanForm!: FormGroup;
   clients: Client[] = [];
+  errorMessage: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -31,7 +36,6 @@ export class InterestOnlyLoanFormComponent implements OnInit {
       clientId: ['', Validators.required],
       loanAmount: ['', [Validators.required, Validators.min(0.01)]],
       interestRate: ['', [Validators.required, Validators.min(0.01)]],
-      termMonths: ['', [Validators.required, Validators.min(1)]],
       startDate: [new Date().toISOString().substring(0, 10), Validators.required],
       purpose: ['']
     });
@@ -55,23 +59,24 @@ export class InterestOnlyLoanFormComponent implements OnInit {
     const decimalMonthlyRate = parseFloat(loanFormData.interestRate) / 100;
 
     // Prepare the data structure expected by addInterestOnlyDailyAccrualLoan
-    // Ensure all required fields from the Omit<> type and the additional ones are present
-    const dataToSave = {
+    const loanData = {
       clientId: loanFormData.clientId,
       loanAmount: parseFloat(loanFormData.loanAmount),
-      monthlyInterestRate: decimalMonthlyRate, // Pass the converted decimal rate
-      termMonths: parseFloat(loanFormData.termMonths),
-      startDate: new Date(loanFormData.startDate), // Ensure it's a Date object
+      currentBalance: parseFloat(loanFormData.loanAmount), // Inicializar el saldo actual igual al monto original
+      monthlyInterestRate: decimalMonthlyRate,
+      startDate: new Date(loanFormData.startDate),
       purpose: loanFormData.purpose
-      // loanType is set by the service method
     };
 
-    this.loanService.addInterestOnlyDailyAccrualLoan(dataToSave);
-    this.router.navigate(['/interest-only-loans']); // Navigate to a list view (to be created)
+    try {
+      this.loanService.addInterestOnlyDailyAccrualLoan(loanData);
+      this.router.navigate(['/interest-only-loans']);
+    } catch (error) {
+      this.errorMessage = error instanceof Error ? error.message : 'Error al crear el préstamo';
+    }
   }
 
   cancel(): void {
-    // Navigate back to a relevant list or dashboard
     this.router.navigate(['/interest-only-loans']);
   }
 }

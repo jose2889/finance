@@ -33,15 +33,6 @@
     </div>
 
     <div>
-      <label for="termMonths">Plazo (meses):</label>
-      <input id="termMonths" type="number" formControlName="termMonths" class="form-control">
-      <div *ngIf="formControls['termMonths'].touched && formControls['termMonths'].invalid">
-        <small *ngIf="formControls['termMonths'].errors?.['required']">El plazo es obligatorio.</small>
-        <small *ngIf="formControls['termMonths'].errors?.['min']">El plazo debe ser mayor que 0.</small>
-      </div>
-    </div>
-
-    <div>
       <label for="startDate">Fecha de Inicio:</label>
       <input id="startDate" type="date" formControlName="startDate" class="form-control">
       <div *ngIf="formControls['startDate'].touched && formControls['startDate'].invalid">

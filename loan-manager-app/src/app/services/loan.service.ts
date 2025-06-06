@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Loan, Installment, InstallmentStatus, LoanType } from '../models'; // Adjust path, Import LoanType
 import { LocalStorageService } from './local-storage.service';
+import { Loan } from '../models/loan.model';
+import { LoanType } from '../models/loan-type.enum';
+import { Installment, InstallmentStatus } from '../models/installment.model';
 
 // Interface for creating standard amortized loans
 interface AmortizedLoanCreationData {
@@ -10,6 +12,12 @@ interface AmortizedLoanCreationData {
   termMonths: number;   // Required for amortized loans
   startDate: Date | string;
   purpose?: string;
+}
+
+interface InterestOnlyLoan extends Loan {
+  monthlyInterestRate: number;
+  installments: Installment[];
+  currentBalance: number;
 }
 
 @Injectable({
@@ -72,12 +80,19 @@ export class LoanService {
       loans = loans.filter(loan => new Date(loan.startDate) <= inclusiveEndDate);
     }
     // If neither startDate nor endDate is provided, all loans are returned.
+
+    // Actualizar estados de cuotas para todos los préstamos
+    loans.forEach(loan => this.updateInstallmentStatuses(loan));
     return loans;
   }
 
   getLoanById(id: string): Loan | undefined {
     const loans = this.getLoansFromStorage();
-    return loans.find(loan => loan.id === id);
+    const loan = loans.find(loan => loan.id === id);
+    if (loan) {
+      this.updateInstallmentStatuses(loan);
+    }
+    return loan;
   }
 
   getLoansByClientId(clientId: string): Loan[] {
@@ -92,6 +107,7 @@ export class LoanService {
       id: crypto.randomUUID(),
       loanType: LoanType.AMORTIZED,
       startDate: new Date(loanData.startDate),
+      currentBalance: loanData.loanAmount, // Inicializar el saldo actual igual al monto original
       installments: this.calculateInstallments(
         loanData.loanAmount,
         loanData.interestRate,
@@ -186,37 +202,51 @@ export class LoanService {
        monthlyPayment = principal / termMonths;
     }
 
-
     for (let i = 1; i <= termMonths; i++) {
       const interestPayment = monthlyInterestRate > 0 ? remainingBalance * monthlyInterestRate : 0;
       const principalPayment = monthlyPayment - interestPayment;
       remainingBalance -= principalPayment;
 
-      // Handle potential floating point inaccuracies for the last payment
-      if (i === termMonths && remainingBalance !== 0 && Math.abs(remainingBalance) < 1) {
-        monthlyPayment += remainingBalance;
-        remainingBalance = 0;
-      }
-
-
       const dueDate = new Date(startDate);
-      dueDate.setMonth(startDate.getMonth() + i);
+      dueDate.setMonth(dueDate.getMonth() + i);
 
       installments.push({
         installmentNumber: i,
         dueDate: dueDate,
-        amount: parseFloat(monthlyPayment.toFixed(2)),
-        principal: parseFloat(principalPayment.toFixed(2)),
-        interest: parseFloat(interestPayment.toFixed(2)),
-        remainingBalance: parseFloat(remainingBalance.toFixed(2)),
+        amount: monthlyPayment,
+        principal: principalPayment,
+        interest: interestPayment,
+        remainingBalance: remainingBalance,
         status: InstallmentStatus.Pending,
-        paidAmount: 0 // Initialize paidAmount
+        paidAmount: 0
       });
     }
+
     return installments;
   }
 
-// Removed updateInstallmentStatus method as per instructions
+  private updateInstallmentStatuses(loan: Loan): void {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    loan.installments.forEach(installment => {
+      const dueDate = new Date(installment.dueDate);
+      dueDate.setHours(0, 0, 0, 0);
+
+      if (installment.status === InstallmentStatus.Pending) {
+        if (dueDate < today) {
+          installment.status = InstallmentStatus.Overdue;
+        }
+      }
+    });
+  }
+
+  public getOverdueInterest(loan: Loan): number {
+    this.updateInstallmentStatuses(loan);
+    return loan.installments
+      .filter(inst => inst.status === InstallmentStatus.Overdue)
+      .reduce((total, inst) => total + (inst.amount - (inst.paidAmount || 0)), 0);
+  }
 
   // New methods for Interest-Only Daily Accrual Loans
 
@@ -362,24 +392,57 @@ export class LoanService {
               { monthlyInterestRate: number; startDate: string | Date; clientId: string; loanAmount: number; purpose?: string }
   ): Loan {
     const loans = this.getLoansFromStorage();
-
-    // Ensure startDate is a Date object
-    const processedStartDate = typeof loanData.startDate === 'string' ? new Date(loanData.startDate) : loanData.startDate;
-
-    const newLoan: Loan = {
+    
+    // Create the new loan with initial installments
+    const newLoan: InterestOnlyLoan = {
+      ...loanData,
       id: crypto.randomUUID(),
-      clientId: loanData.clientId,
-      loanAmount: loanData.loanAmount,
-      interestRate: loanData.monthlyInterestRate, // Storing monthly rate directly
-      // termMonths is now optional and not set here for interest-only loans.
-      startDate: processedStartDate,
       loanType: LoanType.INTEREST_ONLY_DAILY_ACCRUAL,
-      purpose: loanData.purpose,
-      installments: [] // Installments will be dynamically projected, not stored as a fixed schedule initially.
+      interestRate: loanData.monthlyInterestRate,
+      startDate: new Date(loanData.startDate),
+      currentBalance: loanData.loanAmount, // Inicializar el saldo actual igual al monto original
+      installments: []
     };
+
+    // Generate initial payment schedule
+    this.generateInterestOnlyPaymentSchedule(newLoan);
+
     loans.push(newLoan);
     this.saveLoansToStorage(loans);
     return newLoan;
+  }
+
+  private generateInterestOnlyPaymentSchedule(loan: InterestOnlyLoan): void {
+    const startDate = new Date(loan.startDate);
+    const today = new Date();
+    
+    // Calcular los meses transcurridos desde la fecha de inicio
+    const monthsElapsed = (today.getFullYear() - startDate.getFullYear()) * 12 + 
+                         (today.getMonth() - startDate.getMonth());
+    
+    // Si han pasado menos de 0 meses (fecha futura) o exactamente 0 meses, generar 1 cuota
+    // Si han pasado más de 0 meses, generar cuotas por cada mes transcurrido
+    const monthsToGenerate = monthsElapsed <= 0 ? 1 : monthsElapsed;
+
+    loan.installments = [];
+    for (let i = 1; i <= monthsToGenerate; i++) {
+      const dueDate = new Date(startDate);
+      dueDate.setMonth(dueDate.getMonth() + i);
+      
+      const interestAmount = this.calculateAccruedInterestForOneMonth(loan.currentBalance, loan.monthlyInterestRate);
+      const installment: Installment = {
+        installmentNumber: i,
+        dueDate: dueDate,
+        amount: interestAmount,
+        principal: 0,
+        interest: interestAmount,
+        remainingBalance: loan.currentBalance,
+        status: InstallmentStatus.Pending,
+        paidAmount: 0
+      };
+      
+      loan.installments.push(installment);
+    }
   }
 
   public deleteInterestOnlyLoan(loanId: string): { success: boolean; message?: string } {

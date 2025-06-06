@@ -4,7 +4,8 @@ import { LoanType } from './loan-type.enum';
 export interface Loan {
   id: string; // Unique identifier (e.g., UUID)
   clientId: string; // Foreign key to Client
-  loanAmount: number;
+  loanAmount: number;      // Monto original del préstamo (no se modifica)
+  currentBalance: number;  // Saldo actual del préstamo
   // For AMORTIZED, this is annual (e.g., 0.05 for 5%).
   // For INTEREST_ONLY_DAILY_ACCRUAL, interpretation may vary (e.g., could be monthly or annual, context is key).
   interestRate: number;

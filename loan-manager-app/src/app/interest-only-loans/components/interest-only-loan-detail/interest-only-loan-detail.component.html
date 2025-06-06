@@ -16,8 +16,9 @@
       <h2>Plan de Pagos para Préstamo de Interés Simple #{{ loan.id }}</h2>
       <p><strong>Cliente:</strong> {{ client?.firstName }} {{ client?.lastName || 'N/A' }}</p>
       <p><strong>Monto Original del Préstamo:</strong> {{ formatCurrency(loan.loanAmount) }}</p>
+      <p><strong>Saldo Actual del Préstamo:</strong> {{ formatCurrency(loan.currentBalance) }}</p>
       <p><strong>Tasa de Interés Mensual:</strong> {{ formatInterestRate(loan.interestRate) }}</p>
-      <p><strong>Plazo Original (Meses):</strong> {{ loan.termMonths ? loan.termMonths : 'N/A (Interés Simple)' }}</p>
+      <p><strong>Interés Vencido:</strong> <span class="text-red-600">{{ formatCurrency(overdueInterest) }}</span></p>
       <p><strong>Fecha de Inicio:</strong> {{ formatDate(loan.startDate) }}</p>
       <p *ngIf="loan.purpose"><strong>Propósito:</strong> {{ loan.purpose }}</p>
       <!-- Removed Próximo Pago Estimado de Interés, as this will be shown in the projected installments table -->
@@ -38,19 +39,21 @@
           <th>Fecha Vencimiento</th>
           <th>Monto Interés Programado</th>
           <th>Monto Pagado</th>
+          <th>Saldo Capital</th>
           <th>Estado</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let inst of projectedInstallments">
+        <tr *ngFor="let inst of loan?.installments">
           <td>{{ inst.installmentNumber }}</td>
           <td>{{ formatDate(inst.dueDate) }}</td>
           <td>{{ formatCurrency(inst.amount) }}</td>
           <td>{{ formatCurrency(inst.paidAmount || 0) }}</td>
+          <td>{{ formatCurrency(inst.remainingBalance) }}</td>
           <td>{{ inst.status | translateInstallmentStatus }}</td>
         </tr>
-        <tr *ngIf="!projectedInstallments || projectedInstallments.length === 0">
-          <td colspan="5" class="text-center">No hay un plan de cuotas de interés generado para este préstamo.</td>
+        <tr *ngIf="!loan?.installments || loan.installments.length === 0">
+          <td colspan="6" class="text-center">No hay un plan de cuotas de interés generado para este préstamo.</td>
         </tr>
       </tbody>
     </table>

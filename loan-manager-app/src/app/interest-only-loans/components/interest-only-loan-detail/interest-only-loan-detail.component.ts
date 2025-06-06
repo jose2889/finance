@@ -16,8 +16,8 @@ import { TranslateInstallmentStatusPipe } from '../../../pipes/translate-install
   imports: [
     CommonModule,
     RouterModule,
-    PaymentListComponent,       // Standalone component
-    TranslateInstallmentStatusPipe // Standalone pipe
+    PaymentListComponent,
+    TranslateInstallmentStatusPipe
   ],
   templateUrl: './interest-only-loan-detail.component.html',
   styleUrls: ['./interest-only-loan-detail.component.scss']
@@ -25,9 +25,9 @@ import { TranslateInstallmentStatusPipe } from '../../../pipes/translate-install
 export class InterestOnlyLoanDetailComponent implements OnInit {
   loan: Loan | undefined;
   client: Client | undefined;
-  loanId: string | null = null;
-  projectedInstallments: Installment[] = []; // Added
+  loanId: string = '';
   errorMessage: string | null = null;
+  overdueInterest: number = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -37,58 +37,28 @@ export class InterestOnlyLoanDetailComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.loanId = this.route.snapshot.paramMap.get('loanId');
+    this.loanId = this.route.snapshot.paramMap.get('loanId') || '';
     if (this.loanId) {
       const fetchedLoan = this.loanService.getLoanById(this.loanId);
       if (fetchedLoan && fetchedLoan.loanType === LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
         this.loan = fetchedLoan;
         this.client = this.clientService.getClientById(this.loan.clientId);
-        this.projectedInstallments = this.loanService.getProjectedInterestInstallments(this.loan); // Added
-        // this.calculateNextExpectedInterest(); // Removed
+        this.overdueInterest = this.loanService.getOverdueInterest(this.loan);
       } else if (fetchedLoan) {
         this.errorMessage = 'Este préstamo no es del tipo "Interés Simple con Devengo Diario".';
         console.error('Error: Loan type is not INTEREST_ONLY_DAILY_ACCRUAL. Loan ID:', this.loanId);
       } else {
         this.errorMessage = 'Préstamo no encontrado.';
         console.error('Error: Loan not found. Loan ID:', this.loanId);
-        // Optionally navigate away: this.router.navigate(['/interest-only-loans']);
       }
     } else {
       this.errorMessage = 'ID de préstamo no proporcionado en la ruta.';
       console.error('Error: No loanId in route.');
-      // Optionally navigate away: this.router.navigate(['/interest-only-loans']);
     }
   }
 
-  // calculateNextExpectedInterest(): void { // Removed method
-  //   if (this.loan && this.loan.loanAmount > 0) {
-  //     // Find the first pending installment from the schedule
-  //     const firstPending = this.loan.installments
-  //       .filter(inst => inst.status === InstallmentStatus.Pending)
-  //       .sort((a,b) => a.installmentNumber - b.installmentNumber)[0];
-
-  //     if (firstPending) {
-  //       // If there's a pending installment, its amount is the next expected interest
-  //       // (assuming it was correctly calculated/recalculated after any principal paydown)
-  //       this.nextExpectedInterestPaymentAmount = firstPending.amount;
-  //     } else if (this.loan.installments.every(inst => inst.status === InstallmentStatus.Paid) && this.loan.loanAmount > 0) {
-  //       // All scheduled installments paid, but principal remains. Calculate one month's interest on current principal.
-  //       // This assumes loan.interestRate stores the monthly rate for this loan type.
-  //       this.nextExpectedInterestPaymentAmount = this.loanService.calculateAccruedInterestForOneMonth(this.loan.loanAmount, this.loan.interestRate);
-  //     } else {
-  //       // No pending installments and principal might be zero or loan ended.
-  //       this.nextExpectedInterestPaymentAmount = 0;
-  //     }
-  //   } else {
-  //     this.nextExpectedInterestPaymentAmount = 0;
-  //   }
-  // }
-
   navigateToAddPayment(): void {
     if (this.loanId) {
-      // Using a specific route for adding payments to interest-only loans, if different from standard loans.
-      // Or, if PaymentFormComponent can handle both, it could be a shared route.
-      // For now, assuming a distinct path or a smart form.
       this.router.navigate(['/interest-only-loans', this.loanId, 'add-payment']);
     } else {
       console.error('Error: loanId no está disponible.');
@@ -96,7 +66,13 @@ export class InterestOnlyLoanDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    this.router.navigate(['/interest-only-loans']); // Navigate back to the list of interest-only loans
+    this.router.navigate(['/interest-only-loans']);
+  }
+
+  addPayment(): void {
+    if (this.loanId) {
+      this.router.navigate(['/loans', this.loanId, 'add-payment']);
+    }
   }
 
   formatCurrency(amount: number | undefined | null): string {
@@ -112,7 +88,6 @@ export class InterestOnlyLoanDetailComponent implements OnInit {
 
   formatInterestRate(rate: number | undefined): string {
     if (rate === undefined) return 'N/A';
-    // Assuming 'rate' is stored as a decimal (e.g., 0.02 for 2% monthly)
     return `${(rate * 100).toFixed(2)}% mensual`;
   }
 }
