@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Loan, Installment, InstallmentStatus } from '../models'; // Adjust path
+import { Loan, Installment, InstallmentStatus, LoanType } from '../models'; // Adjust path, Import LoanType
 import { LocalStorageService } from './local-storage.service';
 
 @Injectable({
@@ -100,11 +100,12 @@ export class LoanService {
     return loans.filter(loan => loan.clientId === clientId);
   }
 
-  addLoan(loanData: Omit<Loan, 'id' | 'installments'>): Loan {
+  addLoan(loanData: Omit<Loan, 'id' | 'installments' | 'loanType'> & { loanType?: LoanType }): Loan { // Adjust parameter if loanType is passed, or handle as default
     const loans = this.getLoansFromStorage();
     const newLoan: Loan = {
       ...loanData,
       id: crypto.randomUUID(),
+      loanType: loanData.loanType || LoanType.AMORTIZED, // Default to AMORTIZED if not provided
       installments: this.calculateInstallments(
         loanData.loanAmount,
         loanData.interestRate,
@@ -213,4 +214,79 @@ export class LoanService {
   }
 
 // Removed updateInstallmentStatus method as per instructions
+
+  // New methods for Interest-Only Daily Accrual Loans
+
+  public calculateDailyInterestRate(monthlyInterestRate: number): number { // Made public
+    if (monthlyInterestRate < 0) return 0; // Or throw error
+    return monthlyInterestRate / 30; // Simplified: assumes 30 days per month
+  }
+
+  public calculateAccruedInterestForOneMonth(principal: number, monthlyInterestRate: number): number { // Made public
+    if (principal < 0 || monthlyInterestRate < 0) return 0; // Or throw error
+    const dailyRate = this.calculateDailyInterestRate(monthlyInterestRate);
+    // Using 30 days for an estimated monthly interest. Actual daily accrual might vary.
+    return parseFloat((principal * dailyRate * 30).toFixed(2));
+  }
+
+  private generateInitialInterestOnlyInstallmentSchedule(
+    principal: number,
+    monthlyInterestRate: number,
+    termMonths: number,
+    startDate: Date,
+    // loanType: LoanType // loanType param might not be needed if method is specific
+  ): Installment[] {
+    const installments: Installment[] = [];
+    if (termMonths <= 0) return installments;
+
+    const estimatedMonthlyInterest = this.calculateAccruedInterestForOneMonth(principal, monthlyInterestRate);
+
+    for (let i = 1; i <= termMonths; i++) {
+      const dueDate = new Date(startDate);
+      dueDate.setMonth(startDate.getMonth() + i);
+
+      installments.push({
+        installmentNumber: i,
+        dueDate: dueDate,
+        amount: estimatedMonthlyInterest,
+        principal: 0, // Interest-only
+        interest: estimatedMonthlyInterest,
+        remainingBalance: principal, // Principal remains unchanged by these scheduled payments
+        status: InstallmentStatus.Pending,
+        paidAmount: 0,
+      });
+    }
+    return installments;
+  }
+
+  public addInterestOnlyDailyAccrualLoan(
+    loanData: Omit<Loan, 'id' | 'installments' | 'loanType' | 'interestRate'> &
+              { monthlyInterestRate: number; startDate: string | Date; clientId: string; loanAmount: number; termMonths: number; purpose?: string }
+  ): Loan {
+    const loans = this.getLoansFromStorage();
+
+    // Ensure startDate is a Date object
+    const processedStartDate = typeof loanData.startDate === 'string' ? new Date(loanData.startDate) : loanData.startDate;
+
+    const newLoan: Loan = {
+      id: crypto.randomUUID(),
+      clientId: loanData.clientId,
+      loanAmount: loanData.loanAmount,
+      interestRate: loanData.monthlyInterestRate, // Storing monthly rate directly
+      termMonths: loanData.termMonths,
+      startDate: processedStartDate,
+      loanType: LoanType.INTEREST_ONLY_DAILY_ACCRUAL,
+      purpose: loanData.purpose,
+      installments: this.generateInitialInterestOnlyInstallmentSchedule(
+        loanData.loanAmount, // principal for schedule generation
+        loanData.monthlyInterestRate,
+        loanData.termMonths,
+        processedStartDate
+        // LoanType.INTEREST_ONLY_DAILY_ACCRUAL // Not strictly needed by generateInitialInterestOnlyInstallmentSchedule
+      ),
+    };
+    loans.push(newLoan);
+    this.saveLoansToStorage(loans);
+    return newLoan;
+  }
 }

@@ -1,0 +1,41 @@
+<div class="container loan-list-container">
+  <div class="page-header">
+    <h2>Préstamos de Interés Simple (Tasa Mensual)</h2>
+    <button (click)="navigateToAddLoan()" class="button button-primary">
+      <i class="fas fa-plus-circle"></i> Agregar Nuevo Préstamo de Interés Simple
+    </button>
+  </div>
+
+  <div *ngIf="interestOnlyLoans.length > 0; else noLoans">
+    <ul class="loan-items-list">
+      <li *ngFor="let loan of interestOnlyLoans" class="loan-item card mb-3">
+        <div class="card-body">
+          <div class="loan-details">
+            <div><strong>ID Préstamo:</strong> {{ loan.id.substring(0,8) }}...</div>
+            <div><strong>Cliente:</strong> {{ loan.clientName }}</div>
+            <div><strong>Monto Principal:</strong> {{ formatCurrency(loan.loanAmount) }}</div>
+            <div><strong>Tasa Interés:</strong> {{ formatInterestRate(loan.interestRate) }}</div>
+            <div><strong>Plazo (Meses):</strong> {{ loan.termMonths }}</div>
+            <div><strong>Fecha Inicio:</strong> {{ formatDate(loan.startDate) }}</div>
+            <div *ngIf="loan.purpose"><strong>Propósito:</strong> {{ loan.purpose }}</div>
+          </div>
+          <div class="loan-actions">
+            <button (click)="viewLoanDetails(loan.id)" class="button button-secondary">
+              <i class="fas fa-eye"></i> Ver Detalles/Pagos
+            </button>
+            {/* Add other actions like Edit/Delete later if needed */}
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <ng-template #noLoans>
+    <div class="no-items-message card">
+      <div class="card-body text-center">
+        <p>No se encontraron préstamos de interés simple.</p>
+        <p>Comience por <a (click)="navigateToAddLoan()" role="button" class="link-primary">agregar un nuevo préstamo</a>.</p>
+      </div>
+    </div>
+  </ng-template>
+</div>

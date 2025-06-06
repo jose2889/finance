@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { LocalStorageService } from './local-storage.service';
 import { LoanService } from './loan.service'; // To get/update loan data
 import { ClientService } from './client.service'; // To get client data if needed for surplus context
-import { Payment, Loan, Installment, InstallmentStatus, ClientSurplus, Client } from '../models';
+import { Payment, Loan, Installment, InstallmentStatus, ClientSurplus, Client, LoanType } from '../models'; // Import LoanType
 
 @Injectable({
   providedIn: 'root'
@@ -58,15 +58,99 @@ export class PaymentService {
          return { success: false, message: `Client with ID ${loan.clientId} not found for the loan.`};
      }
 
-    let remainingPaymentAmount = paymentAmount;
-    const appliedToInstallments: Payment['appliedToInstallments'] = [];
+    // Initialize common variables for payment record
+    const appliedToInstallmentsForPaymentRecord: Payment['appliedToInstallments'] = [];
     let loanUpdated = false;
+    let remainingPaymentAmount = paymentAmount; // Renamed from paymentAmount for clarity in scope
 
-    // Get all installments sorted by their number (or due date)
-    const allInstallmentsSorted = [...loan.installments].sort((a, b) => a.installmentNumber - b.installmentNumber);
+    if (loan.loanType === LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
+      // Logic for INTEREST_ONLY_DAILY_ACCRUAL loans
+      let loanPrincipalReduced = false;
+      // let interestPaidThisTransaction = 0; // Not strictly needed for logic if not reported
 
-    for (const inst of allInstallmentsSorted) {
-      if (remainingPaymentAmount <= 0) {
+      // 1. Pay Accrued Interest (targeting oldest pending interest installment)
+      // Ensure installments are sorted by due date or number
+      const sortedInstallments = [...loan.installments].sort((a, b) => a.installmentNumber - b.installmentNumber);
+      const firstPendingInstallment = sortedInstallments.find(inst => inst.status === InstallmentStatus.Pending || inst.status === InstallmentStatus.Overdue);
+
+      if (firstPendingInstallment) {
+        const interestDueForThisInstallment = firstPendingInstallment.amount - (firstPendingInstallment.paidAmount || 0);
+        const amountToApplyToInterest = Math.min(remainingPaymentAmount, interestDueForThisInstallment);
+
+        if (amountToApplyToInterest > 0) {
+          firstPendingInstallment.paidAmount = (firstPendingInstallment.paidAmount || 0) + amountToApplyToInterest;
+          // interestPaidThisTransaction += amountToApplyToInterest;
+          remainingPaymentAmount -= amountToApplyToInterest;
+
+          appliedToInstallmentsForPaymentRecord.push({
+            installmentNumber: firstPendingInstallment.installmentNumber,
+            amountApplied: amountToApplyToInterest
+          });
+
+          if (firstPendingInstallment.paidAmount >= firstPendingInstallment.amount) {
+            firstPendingInstallment.status = InstallmentStatus.Paid;
+          }
+          loanUpdated = true;
+        }
+      }
+
+      // 2. Apply Surplus to Principal
+      if (remainingPaymentAmount > 0) {
+        const amountToApplyToPrincipal = remainingPaymentAmount;
+        loan.loanAmount -= amountToApplyToPrincipal; // Reduce principal
+        loanPrincipalReduced = true;
+        loanUpdated = true;
+
+        appliedToInstallmentsForPaymentRecord.push({
+          installmentNumber: -1, // Special indicator for principal reduction
+          amountApplied: amountToApplyToPrincipal,
+          notes: 'Principal Reduction'
+        });
+        remainingPaymentAmount = 0; // Payment fully exhausted
+      }
+
+      // 3. Regenerate/Update Future Installments (if principal was reduced)
+      if (loanPrincipalReduced) {
+        // loan.interestRate here is the monthly rate for this loan type
+        const monthlyInterestRate = loan.interestRate;
+
+        for (const inst of loan.installments) {
+          // Update all pending installments based on new loan.loanAmount (principal)
+          // Or only those after the current payment date / firstPendingInstallment.dueDate
+          // For simplicity, let's update all pending ones.
+          if (inst.status === InstallmentStatus.Pending || (inst === firstPendingInstallment && inst.status !== InstallmentStatus.Paid)) {
+            // If firstPendingInstallment was targeted and not fully paid, it might also need recalc if that's the rule.
+            // However, typically, its original interest amount would stand, and only future ones recalc.
+            // Let's assume only installments strictly after the 'firstPendingInstallment' (if it was paid) or all pending ones if principal reduction happened without touching an installment.
+            // For now, regenerate all pending installments if principal changed.
+            if (inst.status === InstallmentStatus.Pending) { // Only regenerate pending ones not yet touched by this payment
+                const newEstimatedInterest = this.loanService.calculateAccruedInterestForOneMonth(loan.loanAmount, monthlyInterestRate);
+                inst.amount = newEstimatedInterest;
+                inst.interest = newEstimatedInterest;
+                inst.principal = 0;
+                inst.remainingBalance = loan.loanAmount;
+                inst.paidAmount = 0; // Reset paid amount as the installment amount itself changed
+                // inst.status remains Pending
+            }
+          }
+        }
+        // loanUpdated is already true
+      }
+      // End of INTEREST_ONLY_DAILY_ACCRUAL logic block
+
+    } else {
+      // Existing AMORTIZED loan logic
+      // Note: 'remainingPaymentAmount' and 'appliedToInstallments' are now named
+      // 'remainingPaymentAmount' and 'appliedToInstallmentsForPaymentRecord' respectively.
+      // The original logic used 'appliedToInstallments', so we'll map back or use the new name.
+      // For consistency, let's ensure the variable names match inside this block or map them.
+      // The original code's variable names are fine to reuse here, shadowed by the outer scope.
+      // Let's use the new 'appliedToInstallmentsForPaymentRecord' for consistency with the new block.
+
+      const allInstallmentsSorted = [...loan.installments].sort((a, b) => a.installmentNumber - b.installmentNumber);
+
+      for (const inst of allInstallmentsSorted) {
+        if (remainingPaymentAmount <= 0) {
         break; // No more payment amount to apply
       }
 
@@ -117,8 +201,12 @@ export class PaymentService {
       }
     }
 
-    // Handle surplus if any
-    if (remainingPaymentAmount > 0) {
+    // Handle surplus if any (This logic is now common to both loan types)
+    if (remainingPaymentAmount > 0 && loan.loanType !== LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
+      // For AMORTIZED, surplus goes to client surplus account.
+      // For INTEREST_ONLY, it should have been applied to principal already.
+      // If remainingPaymentAmount > 0 for INTEREST_ONLY, it means an overpayment beyond principal, which is an edge case not handled yet (e.g. negative loan.loanAmount).
+      // For now, only apply to client surplus for AMORTIZED.
       let surpluses = this.getClientSurplusesFromStorage();
       let clientSurplus = surpluses.find(s => s.clientId === loan.clientId);
       if (clientSurplus) {
@@ -133,8 +221,14 @@ export class PaymentService {
         surpluses.push(clientSurplus);
       }
       this.saveClientSurplusesToStorage(surpluses);
-      console.log(`[PaymentService] Client ${loan.clientId} surplus updated by ${remainingPaymentAmount}. New total surplus: ${clientSurplus.surplusAmount}`);
+      console.log(`[PaymentService] Client ${loan.clientId} surplus updated for AMORTIZED by ${remainingPaymentAmount}. New total surplus: ${clientSurplus.surplusAmount}`);
+    } else if (remainingPaymentAmount > 0 && loan.loanType === LoanType.INTEREST_ONLY_DAILY_ACCRUAL) {
+        // This case implies overpayment beyond principal reduction (e.g. loan.loanAmount went negative)
+        // Or if principal reduction was not considered 'surplus' handling.
+        // For now, log this unusual state. Future: could be client surplus too.
+        console.warn(`[PaymentService] INTEREST_ONLY loan ${loanId} had ${remainingPaymentAmount} remaining after principal reduction. This is unexpected or needs defined surplus handling.`);
     }
+
 
     // Save the payment record
     const newPayment: Payment = {
@@ -143,7 +237,7 @@ export class PaymentService {
       clientId: loan.clientId,
       paymentDate,
       amountPaid: paymentAmount, // Original total payment amount
-      appliedToInstallments,
+      appliedToInstallments: appliedToInstallmentsForPaymentRecord, // Use the consistently named variable
       paymentMethod,
       notes
     };

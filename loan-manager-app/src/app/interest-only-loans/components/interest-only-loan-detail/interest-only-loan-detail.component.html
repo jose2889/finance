@@ -1,0 +1,88 @@
+<div class="container loan-detail-container mt-4" *ngIf="loan; else loadingOrError">
+  <div class="page-header mb-3">
+    <h2>Detalles del Préstamo de Interés Simple #{{ loan.id.substring(0,8) }}</h2>
+    <div class="header-actions">
+      <button (click)="goBack()" class="button button-secondary">
+        <i class="fas fa-arrow-left"></i> Volver a la Lista
+      </button>
+      <button (click)="navigateToAddPayment()" class="button button-primary" style="margin-left: 10px;">
+        <i class="fas fa-money-bill-wave"></i> Registrar Nuevo Pago
+      </button>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h4>Información Principal del Préstamo</h4>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>Cliente:</strong> {{ client?.firstName }} {{ client?.lastName || 'N/A' }}</p>
+          <p><strong>ID Préstamo:</strong> {{ loan.id }}</p>
+          <p><strong>Monto Principal Actual:</strong> {{ formatCurrency(loan.loanAmount) }}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Tasa de Interés:</strong> {{ formatInterestRate(loan.interestRate) }}</p>
+          <p><strong>Plazo Original (Meses):</strong> {{ loan.termMonths }}</p>
+          <p><strong>Fecha de Inicio:</strong> {{ formatDate(loan.startDate) }}</p>
+          <p *ngIf="loan.purpose"><strong>Propósito:</strong> {{ loan.purpose }}</p>
+          <p><strong>Próximo Pago Estimado de Interés:</strong> {{ formatCurrency(nextExpectedInterestPaymentAmount) }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      <h4>Plan de Pagos de Interés Esperado</h4>
+    </div>
+    <div class="card-body table-responsive">
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th># Cuota</th>
+            <th>Fecha Vencimiento</th>
+            <th>Monto Interés Esperado</th>
+            <th>Monto Pagado</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let inst of loan.installments">
+            <td>{{ inst.installmentNumber }}</td>
+            <td>{{ formatDate(inst.dueDate) }}</td>
+            <td>{{ formatCurrency(inst.amount) }}</td>
+            <td>{{ formatCurrency(inst.paidAmount || 0) }}</td>
+            <td>{{ inst.status | translateInstallmentStatus }}</td>
+          </tr>
+          <tr *ngIf="!loan.installments || loan.installments.length === 0">
+            <td colspan="5" class="text-center">No hay un plan de cuotas de interés generado para este préstamo.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h4>Historial de Pagos Registrados</h4>
+    </div>
+    <div class="card-body">
+      <app-payment-list [loanId]="loanId"></app-payment-list>
+    </div>
+  </div>
+
+</div>
+
+<ng-template #loadingOrError>
+  <div class="container mt-4">
+    <div *ngIf="errorMessage; else loading" class="alert alert-danger">
+      <p>{{ errorMessage }}</p>
+      <button (click)="goBack()" class="button button-secondary mt-2">Volver a la Lista</button>
+    </div>
+    <ng-template #loading>
+      <p>Cargando detalles del préstamo...</p>
+    </ng-template>
+  </div>
+</ng-template>
